@@ -12,7 +12,7 @@ public:
 	~NodePlacer() {}; 
 	// Set/get inputs
 	void setNodeNumber(int num);
-	void setAABB(vec3 minPoint, vec3 maxPoint); 
+	void setAABB(vec3 minp, vec3 maxp); 
 
 	std::vector<vec3> getNodes();
 	

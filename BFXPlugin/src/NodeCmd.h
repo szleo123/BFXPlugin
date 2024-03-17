@@ -2,7 +2,12 @@
 #define CreateLSystemCmd_H_
 
 #include <maya/MPxCommand.h>
+#include <maya/MArgList.h>
+#include <maya/MObject.h>
+#include <maya/MGlobal.h>
+#include <maya/MPoint.h>
 #include <string>
+#include "vec.h"
 
 class NodeCmd : public MPxCommand
 {
