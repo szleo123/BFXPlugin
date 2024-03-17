@@ -11,14 +11,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # Add source files to the project
 set(SOURCES
-src/LSystemCmd.cpp
-src/PluginMain.cpp
+    src/NodeCmd.cpp
+    src/PluginMain.cpp
+    src/vec.cpp
+    src/NodePlacer.cpp
 )
 
 
 # Add header files to the project
 set(HEADERS
-    src/LSystemCmd.h
+    src/NodeCmd.h
+    src/vec.h
+    src/NodePlacer.h
 )
 
 find_package(Maya REQUIRED)

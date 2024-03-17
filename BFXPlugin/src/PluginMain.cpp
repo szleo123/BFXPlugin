@@ -16,7 +16,7 @@
 #include <maya/MStringArray.h>
 #include <list>
 
-#include "BFXCmd.h"
+#include "NodeCmd.h"
 
 MStatus initializePlugin( MObject obj )
 {
@@ -24,7 +24,7 @@ MStatus initializePlugin( MObject obj )
     MFnPlugin plugin( obj, "MyPlugin", "1.0", "Any");
 
     // Register Command
-    status = plugin.registerCommand( "BFXCmd", BFXCmd::creator );
+    status = plugin.registerCommand( "NodeCmd", NodeCmd::creator );
     if (!status) {
         status.perror("registerCommand");
         return status;
@@ -38,7 +38,7 @@ MStatus uninitializePlugin( MObject obj)
     MStatus   status = MStatus::kSuccess;
     MFnPlugin plugin( obj );
 
-    status = plugin.deregisterCommand( "BFXCmd" );
+    status = plugin.deregisterCommand( "NodeCmd" );
     if (!status) {
 	    status.perror("deregisterCommand");
 	    return status;

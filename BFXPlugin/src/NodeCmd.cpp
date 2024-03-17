@@ -1,17 +1,17 @@
-#include "BFXCmd.h"
+#include "NodeCmd.h"
 
 
 #include <maya/MGlobal.h>
 #include <list>
-BFXCmd::BFXCmd() : MPxCommand()
+NodeCmd::NodeCmd() : MPxCommand()
 {
 }
 
-BFXCmd::~BFXCmd()
+NodeCmd::~NodeCmd()
 {
 }
 
-MStatus BFXCmd::doIt( const MArgList& args )
+MStatus NodeCmd::doIt( const MArgList& args )
 {
 	// message in Maya output window
     cout<<"Implement Me!"<<endl;
