@@ -4,12 +4,12 @@
 #include <maya/MPxCommand.h>
 #include <string>
 
-class LSystemCmd : public MPxCommand
+class BFXCmd : public MPxCommand
 {
 public:
-    LSystemCmd();
-    virtual ~LSystemCmd();
-    static void* creator() { return new LSystemCmd(); }
+    BFXCmd();
+    virtual ~BFXCmd();
+    static void* creator() { return new BFXCmd(); }
     MStatus doIt( const MArgList& args );
 };
 

@@ -1,17 +1,17 @@
-#include "LSystemCmd.h"
+#include "BFXCmd.h"
 
 
 #include <maya/MGlobal.h>
 #include <list>
-LSystemCmd::LSystemCmd() : MPxCommand()
+BFXCmd::BFXCmd() : MPxCommand()
 {
 }
 
-LSystemCmd::~LSystemCmd() 
+BFXCmd::~BFXCmd()
 {
 }
 
-MStatus LSystemCmd::doIt( const MArgList& args )
+MStatus BFXCmd::doIt( const MArgList& args )
 {
 	// message in Maya output window
     cout<<"Implement Me!"<<endl;
