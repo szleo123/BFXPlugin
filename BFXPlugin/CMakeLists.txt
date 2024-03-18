@@ -15,6 +15,7 @@ set(SOURCES
     src/PluginMain.cpp
     src/vec.cpp
     src/NodePlacer.cpp
+    src/NodePlacerNode.cpp
 )
 
 
@@ -23,6 +24,7 @@ set(HEADERS
     src/NodeCmd.h
     src/vec.h
     src/NodePlacer.h
+    src/NodePlacerNode.h
 )
 
 find_package(Maya REQUIRED)
