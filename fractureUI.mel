@@ -1,0 +1,172 @@
+// MEL GUI for the BFX Maya plug-in
+
+// Add LSystem menu item to Maya menu bar
+global proc createMenu()
+{	
+	global string $gMainWindow;
+	
+	// check if the menu already exists.
+	// 	LSystemMenu is a menu object
+	if(`menu -ex BFXMenu`)
+	{
+		deleteUI BFXMenu;
+	}
+	
+	setParent $gMainWindow;
+	menu -l "BFX" BFXMenu;
+		menuItem -l "Brittle Fracture" -c displayConfig;
+		//menuItem -l "LSystem Node" -c createLSystemNode;
+}
+
+global proc deleteMenu()
+{
+	if(`menu -ex BFXMenu`)
+	{
+		deleteUI BFXMenu;
+	}
+}
+
+global proc deleteChildrenOfSelected() 
+{
+    // Get the list of currently selected objects
+    string $selectedObjects[] = `ls -sl`;
+    string $object = $selectedObjects[0]; 
+    // List all children of the current object
+    string $children[] = `listRelatives -c $object`;
+    for ($i = 1; $i < size($children); $i++){
+        delete $children[$i];
+    }
+    select -cl; 
+}
+
+// Create cmd configuration dialog window
+global proc displayConfig()
+{
+	global string $grammarScrollField;
+	global string $numIter;
+	global string $angle;
+	global string $stepSize;
+	string $sphere[] = `sphere`;
+
+	if(`window -ex BFXWindow`)
+	{
+		deleteUI BFXWindow;
+	}
+
+	window -title "Brittle Fracture Simulation Options" -wh 500 500 BFXWindow;
+
+	/* grammar text scroll field
+	columnLayout -adjustableColumn true;
+	string $formGrammar = `formLayout`;
+	string $title = `text -l "Browse for Grammar Files" -fn boldLabelFont`;
+	string $browseBtn = `button -l "Browse" -c openFileBrowser`;
+
+	formLayout -e
+		-attachForm $title "left" 0
+		-attachForm $browseBtn "right" 0
+		$formGrammar;
+	setParent ..;
+	
+	$grammarScrollField = `scrollField -w 500 -wordWrap true -editable true
+		-text "Load a txt or type in your grammar here..."
+		-changeCommand updateGrammar`;
+	setParent ..;*/
+
+	// Node placement
+	// collapsable parameters
+	frameLayout -collapsable true -label "Node Placement";
+		columnLayout -adjustableColumn true;
+		rowLayout -numberOfColumns 3 -ad3 1; 
+		intSliderGrp -l "Num of Nodes" -f true -fmn 0 -fmx 50 -min 1 -max 20 -v 10 "numSlider";
+		button -l "Place Nodes" -c "int $num = `intSliderGrp -q -v numSlider`; NodeCmd -number $num;";
+		button -l "Delete Nodes" -c deleteChildrenOfSelected;
+		setParent ..;
+		//string $NodePlacecmd = "int $val = `intSliderGrp -q -v " + $numIter + "`; NodeCmd -number $val;";
+		//string $nodeplacerBtn = `button -l "Place Nodes" -c $NodePlacecmd"`; 
+		//$stepSize = `floatSliderGrp -l "Step Size" -f true -fmn 0 -fmx 10 -min 0 -max 5 -v 1`;
+		//$angle = `floatSliderGrp -l "Angle" -f true -fmn -180 -fmx 180 -min -90 -max 90 -v 30`;
+		text -l "Voronoi Container Size:" -fn boldLabelFont;
+		attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Min Sites";
+		attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Max Sites";
+		
+		string $formGrammar = `formLayout`;
+		string $title = `text -l "VACD" -fn boldLabelFont`;
+		string $browseBtn = `button -l "Pre-process" -c openFileBrowser`;
+
+		formLayout -e
+			-attachForm $title "left" 100
+			-attachForm $browseBtn "right" 100
+			$formGrammar;
+		setParent ..;
+
+	setParent ..;
+
+	// Fracture pattern
+	// collapsable parameters
+	frameLayout -collapsable true -label "Fracture Configuration";
+		columnLayout -adjustableColumn true;
+
+		// create the first radio collection
+ 		$radio1 = `radioCollection`;
+
+ 		// add some radio buttons to the collection
+ 		$full = `radioButton -label "Full-body"`;
+ 		$partial = `radioButton -label "Partial"`;
+		// edit the radio collections to set the required radio button
+ 		radioCollection -edit -select $full $radio1;
+
+		optionMenu -label "Fracture Pattern" -changeCommand "print #1" -w 100;
+            menuItem -label "Uniform";
+            menuItem -label "Cluster";
+            menuItem -label "Radial";
+			menuItem -label "Plannar";
+			menuItem -label "Slice";
+			menuItem -label "Brick";
+			menuItem -label "Custom";
+		string $formGrammar2 = `formLayout`;
+		string $title2 = `text -l "Custom Fracture Pattern" -fn boldLabelFont`;
+		string $browseBtn2 = `button -l "Browse File" -c openFileBrowser`;
+
+		formLayout -e -en false
+			-attachForm $title2 "left" 100
+			-attachForm $browseBtn2 "right" 100
+			$formGrammar2;
+		setParent ..;
+
+		$stepSize = `floatSliderGrp -l "Explode Amount" -f true -fmn 0 -fmx 5 -min 0 -max 1 -v 0.5`;
+		$angle = `floatSliderGrp -l "Fracture Density" -f true -fmn 0 -fmx 5 -min 0 -max 5 -v 1`;
+	setParent ..;
+
+	// Partial Fracturing
+	// collapsable parameters
+	frameLayout -collapsable true -label "Partial Fracturing";
+		columnLayout -adjustableColumn true;
+
+		text -l "Impact Sphere:" -fn boldLabelFont;
+		attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Position" -en false;
+		attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Scale" -en false;
+	setParent ..;
+
+	// dialog buttons
+	string $formParams = `formLayout`;
+	string $createBtn = `button -l "Create" -w 50 -c callLSystemCmd`;
+	string $cancelBtn = `button -l "Cancel" -w 50 -c quitConfig`;
+
+	formLayout -e
+		-attachPosition $createBtn "left" 0 75
+		-attachPosition $cancelBtn "right" 0 100
+		$formParams;
+
+	showWindow;
+}
+
+// Close command window
+global proc quitConfig()
+{
+	if(`window -ex BFXWindow`)
+	{
+		deleteUI BFXWindow;
+	}
+}
+
+createMenu();

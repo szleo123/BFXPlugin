@@ -22,6 +22,7 @@ MStatus initializePlugin( MObject obj )
 {
     MStatus   status = MStatus::kSuccess;
     MFnPlugin plugin( obj, "MyPlugin", "1.0", "Any");
+    MString pluginPath = plugin.loadPath();
 
     // Register Command
     status = plugin.registerCommand( "NodeCmd", NodeCmd::creator );
@@ -29,6 +30,10 @@ MStatus initializePlugin( MObject obj )
         status.perror("registerCommand");
         return status;
     }
+
+    char buffer[2048];
+    sprintf_s(buffer, 2048, "source \"%s/fractureUI.mel\";", plugin.loadPath().asChar());
+    MGlobal::executeCommand(buffer, true);
 
     return status;
 }
@@ -46,5 +51,3 @@ MStatus uninitializePlugin( MObject obj)
 
     return status;
 }
-
-
