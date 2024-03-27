@@ -94,7 +94,6 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	std::vector<vec3> points = nodePlacer.getNodes(); 
 	
 
-
 	// prepare mel scripts
 	MString p1 = "string $sphere[] = `polySphere -r ";
 	p1 += sphereSize;

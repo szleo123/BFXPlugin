@@ -32,6 +32,7 @@ MStatus initializePlugin( MObject obj )
     }
 
     char buffer[2048];
+    // NOTE: make sure the .mel scripts are in the same location as .mll
     sprintf_s(buffer, 2048, "source \"%s/fractureUI.mel\";", plugin.loadPath().asChar());
     MGlobal::executeCommand(buffer, true);
 

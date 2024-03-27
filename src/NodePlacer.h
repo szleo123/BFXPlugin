@@ -23,7 +23,7 @@ public:
 protected:
 	std::vector<vec3> nodes; 
 	int numOfNodes; 
-	vec3 minPoint; 
+	vec3 minPoint; // corners of the selected mesh's bounding box
 	vec3 maxPoint; 
 };
 
