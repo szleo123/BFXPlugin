@@ -1,4 +1,4 @@
 # BFXPlugin
 
-## Node Placer Notes
-Put `fractureUI.mel` in the same directory as the built `.mll` plugin.
+## Configuration Notes
+After build the project, put `fractureUI.mel` in the same directory as the built `.mll` plugin.
