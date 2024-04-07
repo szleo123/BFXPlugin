@@ -30,5 +30,23 @@ Once you have set up the submodules you can update the repository with `git fetc
 git pull --recurse-submodules
 
 # pull all changes for the submodules
+# NOTE: Only check out the commit specified in the index of the superproject
 git submodule update --remote
+```
+### Update submodules to the latest commit available from their remote
+```
+# Change to the submodule directory
+cd BFX
+
+# Checkout desired branch
+git checkout main
+
+# Update
+git pull
+
+# Get back to the superproject root
+cd ..
+
+# Now the submodules are in the state you want, so
+git commit -am "Pulled down update to BFX"
 ```
