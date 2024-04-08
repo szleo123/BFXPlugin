@@ -29,21 +29,21 @@ endif()
 set(BFX_SOURCE_DIR ${CMAKE_SOURCE_DIR}/BFX/src)
 
 set(SOURCES
-    ${BFX_SOURCE_DIR}/clipper.cpp
     src/NodeCmd.cpp
     src/PluginMain.cpp
     ${BFX_SOURCE_DIR}/vec.cpp
     src/NodePlacer.cpp
     src/NodePlacerNode.cpp
+    src/FractureCmd.cpp
 )
 
 # Add header files to the project
 set(HEADERS
-    ${BFX_SOURCE_DIR}/clipper.h
     src/NodeCmd.h
     ${BFX_SOURCE_DIR}/vec.h
     src/NodePlacer.h
     src/NodePlacerNode.h
+    src/FractureCmd.h
 )
 
 find_package(Maya REQUIRED)

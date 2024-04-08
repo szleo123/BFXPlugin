@@ -1,12 +1,12 @@
 // MEL GUI for the BFX Maya plug-in
 
-// Add LSystem menu item to Maya menu bar
+// Add BFX menu item to Maya menu bar
 global proc createMenu()
 {	
 	global string $gMainWindow;
 	
 	// check if the menu already exists.
-	// 	LSystemMenu is a menu object
+	// 	BFXMenu is a menu object
 	if(`menu -ex BFXMenu`)
 	{
 		deleteUI BFXMenu;
@@ -15,7 +15,7 @@ global proc createMenu()
 	setParent $gMainWindow;
 	menu -l "BFX" BFXMenu;
 		menuItem -l "Brittle Fracture" -c displayConfig;
-		//menuItem -l "LSystem Node" -c createLSystemNode;
+		//other sub-items;
 }
 
 global proc deleteMenu()
@@ -42,10 +42,10 @@ global proc deleteChildrenOfSelected()
 // Create cmd configuration dialog window
 global proc displayConfig()
 {
-	global string $grammarScrollField;
 	global string $numIter;
-	global string $angle;
-	global string $stepSize;
+	global string $patternType;
+	global string $fractureDensity;
+	global string $explodeAmt;
 	string $sphere[] = `sphere`;
 
 	if(`window -ex BFXWindow`)
@@ -54,23 +54,6 @@ global proc displayConfig()
 	}
 
 	window -title "Brittle Fracture Simulation Options" -wh 500 500 BFXWindow;
-
-	/* grammar text scroll field
-	columnLayout -adjustableColumn true;
-	string $formGrammar = `formLayout`;
-	string $title = `text -l "Browse for Grammar Files" -fn boldLabelFont`;
-	string $browseBtn = `button -l "Browse" -c openFileBrowser`;
-
-	formLayout -e
-		-attachForm $title "left" 0
-		-attachForm $browseBtn "right" 0
-		$formGrammar;
-	setParent ..;
-	
-	$grammarScrollField = `scrollField -w 500 -wordWrap true -editable true
-		-text "Load a txt or type in your grammar here..."
-		-changeCommand updateGrammar`;
-	setParent ..;*/
 
 	// Node placement
 	// collapsable parameters
@@ -81,10 +64,10 @@ global proc displayConfig()
 		button -l "Place Nodes" -c "int $num = `intSliderGrp -q -v numSlider`; NodeCmd -number $num;";
 		button -l "Delete Nodes" -c deleteChildrenOfSelected;
 		setParent ..;
+		
 		//string $NodePlacecmd = "int $val = `intSliderGrp -q -v " + $numIter + "`; NodeCmd -number $val;";
 		//string $nodeplacerBtn = `button -l "Place Nodes" -c $NodePlacecmd"`; 
-		//$stepSize = `floatSliderGrp -l "Step Size" -f true -fmn 0 -fmx 10 -min 0 -max 5 -v 1`;
-		//$angle = `floatSliderGrp -l "Angle" -f true -fmn -180 -fmx 180 -min -90 -max 90 -v 30`;
+
 		text -l "Voronoi Container Size:" -fn boldLabelFont;
 		attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Min Sites";
 		attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Max Sites";
@@ -115,7 +98,7 @@ global proc displayConfig()
 		// edit the radio collections to set the required radio button
  		radioCollection -edit -select $full $radio1;
 
-		optionMenu -label "Fracture Pattern" -changeCommand "print #1" -w 100;
+		optionMenu -label "Fracture Pattern" -changeCommand "print #1" -w 100 $patternType;
             menuItem -label "Uniform";
             menuItem -label "Cluster";
             menuItem -label "Radial";
@@ -133,8 +116,8 @@ global proc displayConfig()
 			$formGrammar2;
 		setParent ..;
 
-		$stepSize = `floatSliderGrp -l "Explode Amount" -f true -fmn 0 -fmx 5 -min 0 -max 1 -v 0.5`;
-		$angle = `floatSliderGrp -l "Fracture Density" -f true -fmn 0 -fmx 5 -min 0 -max 5 -v 1`;
+		$explodeAmt = `floatSliderGrp -l "Explode Amount" -f true -fmn 0 -fmx 5 -min 0 -max 1 -v 0.5`;
+		$fractureDensity = `floatSliderGrp -l "Fracture Density" -f true -fmn 0 -fmx 5 -min 0 -max 5 -v 1`;
 	setParent ..;
 
 	// Partial Fracturing
@@ -149,7 +132,7 @@ global proc displayConfig()
 
 	// dialog buttons
 	string $formParams = `formLayout`;
-	string $createBtn = `button -l "Create" -w 50 -c callLSystemCmd`;
+	string $createBtn = `button -l "Create" -w 50 -c callFractureCmd`;
 	string $cancelBtn = `button -l "Cancel" -w 50 -c quitConfig`;
 
 	formLayout -e
@@ -158,6 +141,15 @@ global proc displayConfig()
 		$formParams;
 
 	showWindow;
+}
+
+// call FractureCmd with args from config window
+global proc callFractureCmd()
+{
+	global string $patternType;
+
+	print ("pattern: " + $patternType + "\n");
+	FractureCmd -p $patternType;
 }
 
 // Close command window
