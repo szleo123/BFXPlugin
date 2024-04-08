@@ -23,7 +23,7 @@ std::vector<vec3> NodePlacer::getNodes()
 	return nodes;
 }
 
-// randomly generate nodes based 
+// randomly generate nodes
 void NodePlacer::generateNodes(std::string method)
 {
 	if (!method.compare("uniform")) {

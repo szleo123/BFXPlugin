@@ -56,7 +56,6 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	MItSelectionList iter(selection, MFn::kInvalid, &status);
 	MBoundingBox boundingBox;
 	MDagPath dagPath;
-	MObject component;
 	MObject selected; 
 	for (; !iter.isDone(); iter.next()) {
 		status = iter.getDagPath(dagPath);
