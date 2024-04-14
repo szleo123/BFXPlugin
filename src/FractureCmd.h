@@ -1,6 +1,7 @@
 #pragma once
 
 #include <maya/MPxCommand.h>
+#include <maya/MCommandResult.h>
 #include <maya/MSyntax.h>
 #include <maya/MSelectionList.h>
 #include <maya/MItSelectionList.h>

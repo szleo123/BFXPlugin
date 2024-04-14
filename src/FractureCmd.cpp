@@ -1,9 +1,11 @@
 #include "FractureCmd.h"
+#include "NodeCmd.h"
 
 #include <maya/MGlobal.h>
 #include <maya/MArgDatabase.h>
 #include <list>
 #include <iostream>
+#include <filesystem>
 
 FractureCmd::FractureCmd() : MPxCommand()
 {
@@ -57,24 +59,68 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	status = dagPath.extendToShape();
 	MFnMesh selectedMesh(dagPath.node());
 
-	// Save the selected mesh to local as an OBJ
+	/**
+	 *	Mesh Preparation
+	**/
+	// 1. Save the selected mesh to the current workspace directory as an OBJ
+	MCommandResult workspaceResult;
+	status = MGlobal::executeCommand("workspace -q -dir", workspaceResult);
+	MString currWorkspace = workspaceResult.stringResult();
+	
 	MStringArray substringList;
 	selectedMesh.name().split(':', substringList);
-	MString filename = "\"" + substringList[0] + ".obj\"";
-	MString options = "\"groups=1;ptgroups=1;materials=0;smoothing=0;normals=1\"";
-	MString objExportCmd = "file -force -options " + options + " -typ \"OBJexport\" -pr -es " + filename;
-	status = MGlobal::executeCommand(objExportCmd);
-	if (!status) {
-		MGlobal::displayInfo(objExportCmd);
-		MGlobal::displayError("Export " + filename + " failed: " + status.errorString());
+	MString filename = substringList[0];
+
+	MString inputFilepath = "\"" + currWorkspace /*+ filename*/ + "input.obj\"";
+	bool inputExists = std::filesystem::exists(std::string((currWorkspace /*+ filename*/ + "input.obj").asChar()));
+	if (!inputExists) {
+		MString options = "\"groups=1;ptgroups=1;materials=0;smoothing=0;normals=1\"";
+		MString objExportCmd = "file -force -options " + options + " -typ \"OBJexport\" -pr -es " + inputFilepath;
+		status = MGlobal::executeCommand(objExportCmd);
+		if (!status) {
+			MGlobal::displayInfo(objExportCmd);
+			MGlobal::displayError("Export " + inputFilepath + " failed: " + status.errorString());
+			return MStatus::kFailure;
+		}
+		else {
+			MGlobal::displayInfo(objExportCmd);
+			MGlobal::displayInfo("Export " + inputFilepath + " successful!");
+		}
 	}
 	else {
-		MGlobal::displayInfo(objExportCmd);
-		MGlobal::displayInfo("Export " + filename + " successful!");
+		MGlobal::displayInfo("Export: Found " + inputFilepath);
 	}
 
-	//MString msg = MString("Mesh info: ")+ selectedMesh.name() + MString(" has #verts = ") + selectedMesh.numVertices() + MString(", polycount = ") + selectedMesh.numPolygons();
-	//MGlobal::displayInfo(msg);
+	// 2. generate CoACD convex hulls
+	MString outputFilepath = "\"" + currWorkspace /*+ filename*/ + "output.obj\"";
+	std::string outputFilepathStr = std::string((currWorkspace /*+ filename*/ + "output.obj").asChar());
+	bool outputExists = std::filesystem::exists(outputFilepathStr);
+	if (!outputExists) {
+		MGlobal::displayError("CoACD: Failed generating " + outputFilepath);
+		return MStatus::kFailure;
+	}
+	else {
+		MGlobal::displayInfo("CoACD: Found " + outputFilepath);
+	}
+
+	// 3. run fracture algorithm on decomposed mesh
+	if (nodePlacer.nodes.size() < 1) {
+		MGlobal::displayError("Fracture: generate node placement first!");
+		return MStatus::kFailure;
+	}
+	else {
+		MString count;
+		count += (int)nodePlacer.nodes.size();
+		MGlobal::displayInfo("Fracture: # nodes = " + count);
+	}
+
+	//std::vector<Compound> fracturePieces;
+	//genFractureUniform(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint,
+	//	outputFilepathStr, fracturePieces);
+
+	//if (fracturePieces.size() > 0) {
+	//	MGlobal::displayInfo("Fracture: # fractures = " + fracturePieces.size());
+	//}
 
     return status;
 }
