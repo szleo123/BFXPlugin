@@ -9,8 +9,7 @@
 #include <maya/MFnMesh.h>
 #include <maya/MFileIO.h>
 #include <string>
-#include "vec.h"
-#include "clipper.h"
+#include "simulation.h"
 
 class FractureCmd : public MPxCommand
 {
