@@ -55,10 +55,26 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	MDagPath dagPath;
 	status = selection.getDagPath(0, dagPath);
 	status = dagPath.extendToShape();
-	
 	MFnMesh selectedMesh(dagPath.node());
-	MString msg = MString("Mesh info : verts = ") + selectedMesh.numVertices() + MString(", polycount = ") + selectedMesh.numPolygons();
-	MGlobal::displayInfo(msg);
+
+	// Save the selected mesh to local as an OBJ
+	MStringArray substringList;
+	selectedMesh.name().split(':', substringList);
+	MString filename = "\"" + substringList[0] + ".obj\"";
+	MString options = "\"groups=1;ptgroups=1;materials=0;smoothing=0;normals=1\"";
+	MString objExportCmd = "file -force -options " + options + " -typ \"OBJexport\" -pr -es " + filename;
+	status = MGlobal::executeCommand(objExportCmd);
+	if (!status) {
+		MGlobal::displayInfo(objExportCmd);
+		MGlobal::displayError("Export " + filename + " failed: " + status.errorString());
+	}
+	else {
+		MGlobal::displayInfo(objExportCmd);
+		MGlobal::displayInfo("Export " + filename + " successful!");
+	}
+
+	//MString msg = MString("Mesh info: ")+ selectedMesh.name() + MString(" has #verts = ") + selectedMesh.numVertices() + MString(", polycount = ") + selectedMesh.numPolygons();
+	//MGlobal::displayInfo(msg);
 
     return status;
 }
