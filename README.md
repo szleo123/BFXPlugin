@@ -14,6 +14,7 @@ Authors: Yilin Li and Linda Zhu
    * Refer to the **[Troubleshooting](https://github.com/LinDadaism/BrittleFractureSimulation?tab=readme-ov-file#troubleshooting)** section for the `voro++` build errors.
 7. After the project is built, put `fractureUI.mel` in the same directory as the built `.mll` plugin.
    * By default, the `.mll` file is under `/build/bin/[Debug or Release]`.
+8. Put `coacd.exe` in the same directoy as `.mll`.
 9. Now you should be able to load the plugin into Maya.
 
 ## Dev Notes

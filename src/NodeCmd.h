@@ -19,6 +19,10 @@
 #include <string>
 #include "vec.h"
 
+#include "NodePlacer.h"
+
+extern NodePlacer nodePlacer; // TODO: make a static shared data class to communicate between commands
+
 class NodeCmd : public MPxCommand
 {
 public:

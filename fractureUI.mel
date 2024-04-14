@@ -43,7 +43,7 @@ global proc deleteChildrenOfSelected()
 global proc displayConfig()
 {
 	global string $numIter;
-	global string $patternType;
+	global string $patternType = "patternType";
 	global string $fractureDensity;
 	global string $explodeAmt;
 	//string $sphere[] = `sphere`;
@@ -98,7 +98,7 @@ global proc displayConfig()
 		// edit the radio collections to set the required radio button
  		radioCollection -edit -select $full $radio1;
 
-		optionMenu -label "Fracture Pattern" -changeCommand "print #1" -w 100 $patternType;
+		optionMenu -label "Fracture Pattern" -w 100 $patternType; // -changeCommand "print #1" // this will print out the curr selection @ dropdown.onChange()
             menuItem -label "Uniform";
             menuItem -label "Cluster";
             menuItem -label "Radial";
@@ -145,16 +145,26 @@ global proc displayConfig()
 
 global proc runCoACD()
 {
-	print(`workspace -q -dir`);
-	//system("coacd.exe -i input.obj -o output.obj"); // TODO!!!
+	// TODO: better file relative path
+	// currently assuming all the assets and coacd.exe are in the same dir as .mll
+	string $wk = `workspace -q -dir`;
+	string $coacdPath = $wk + "coacd.exe";
+	string $inputPath = $wk + "input.obj";
+	string $outputPath = $wk + "output.obj";
+	string $remeshPath = $wk + "remesh.obj";
+	//print($coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\n");
+
+	system("\"" + $coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\"");
 }
 
 // call FractureCmd with args from config window
 global proc callFractureCmd()
 {
 	global string $patternType;
+	
+	string $currPatternType = `optionMenu -q -v $patternType`;
+	print ("pattern: " + $currPatternType + "\n");
 
-	print ("pattern: " + $patternType + "\n");
 	FractureCmd -p $patternType;
 }
 

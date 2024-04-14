@@ -1,11 +1,13 @@
 #include "NodeCmd.h"
-#include "NodePlacer.h"
 
 #include <maya/MGlobal.h>
 #include <list>
 #include <iostream>
 
 #define SPHERE_MULTIPLIER 0.02
+
+NodePlacer nodePlacer;
+
 NodeCmd::NodeCmd() : MPxCommand()
 {
 }
@@ -86,12 +88,10 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	double sphereSize = min(half_width, min(half_height, half_depth)) * SPHERE_MULTIPLIER * 2;
 
 	// Run the NodePlacer
-	NodePlacer nodePlacer; 
 	nodePlacer.setNodeNumber(number); 
 	nodePlacer.setAABB(minP, maxP);
 	nodePlacer.generateNodes(method); 
 	std::vector<vec3> points = nodePlacer.getNodes(); 
-	
 
 	// prepare mel scripts
 	MString p1 = "string $sphere[] = `polySphere -r ";
