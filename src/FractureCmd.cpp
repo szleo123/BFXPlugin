@@ -114,12 +114,14 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo("Fracture: # nodes = " + count);
 	}
 
-	//std::vector<Compound> fracturePieces;
-	//genFractureUniform(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint,
-	//	outputFilepathStr, fracturePieces);
+	// TODO: including code below will cause .mll fail to load in Maya ;(
 
-	//if (fracturePieces.size() > 0) {
-	//	MGlobal::displayInfo("Fracture: # fractures = " + fracturePieces.size());
+	//Simulation fractureSim(outputFilepathStr);
+	//fractureSim.genFractureUniform(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint);
+
+	//auto shards = fractureSim.getFractureShards();
+	//if (shards.size() > 0) {
+	//	MGlobal::displayInfo("Fracture: # fractures = " + shards.size());
 	//}
 
     return status;
