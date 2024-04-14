@@ -46,7 +46,7 @@ global proc displayConfig()
 	global string $patternType;
 	global string $fractureDensity;
 	global string $explodeAmt;
-	string $sphere[] = `sphere`;
+	//string $sphere[] = `sphere`;
 
 	if(`window -ex BFXWindow`)
 	{
@@ -69,12 +69,12 @@ global proc displayConfig()
 		//string $nodeplacerBtn = `button -l "Place Nodes" -c $NodePlacecmd"`; 
 
 		text -l "Voronoi Container Size:" -fn boldLabelFont;
-		attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Min Sites";
-		attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Max Sites";
+		//attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Min Sites";
+		//attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Max Sites";
 		
 		string $formGrammar = `formLayout`;
-		string $title = `text -l "VACD" -fn boldLabelFont`;
-		string $browseBtn = `button -l "Pre-process" -c openFileBrowser`;
+		string $title = `text -l "CoACD" -fn boldLabelFont`;
+		string $browseBtn = `button -l "Pre-process" -c runCoACD`;
 
 		formLayout -e
 			-attachForm $title "left" 100
@@ -126,8 +126,8 @@ global proc displayConfig()
 		columnLayout -adjustableColumn true;
 
 		text -l "Impact Sphere:" -fn boldLabelFont;
-		attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Position" -en false;
-		attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Scale" -en false;
+		//attrFieldGrp -attribute ($sphere[0] + ".translate") -label "Position" -en false;
+		//attrFieldGrp -attribute ($sphere[0] + ".scale") -label "Scale" -en false;
 	setParent ..;
 
 	// dialog buttons
@@ -141,6 +141,12 @@ global proc displayConfig()
 		$formParams;
 
 	showWindow;
+}
+
+global proc runCoACD()
+{
+	print(`workspace -q -dir`);
+	//system("coacd.exe -i input.obj -o output.obj"); // TODO!!!
 }
 
 // call FractureCmd with args from config window

@@ -6,6 +6,7 @@
 #include <maya/MItSelectionList.h>
 #include <maya/MDagPath.h>
 #include <maya/MFnMesh.h>
+#include <maya/MFileIO.h>
 #include <string>
 #include "vec.h"
 #include "clipper.h"
