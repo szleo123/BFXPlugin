@@ -1,11 +1,11 @@
 #include "FractureCmd.h"
-#include "NodeCmd.h"
 
 #include <maya/MGlobal.h>
 #include <maya/MArgDatabase.h>
 #include <list>
 #include <iostream>
 #include <filesystem>
+#include <string>
 
 FractureCmd::FractureCmd() : MPxCommand()
 {
@@ -103,27 +103,22 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo("CoACD: Found " + outputFilepath);
 	}
 
-	// 3. run fracture algorithm on decomposed mesh
+	/* move the operations below to CompoundNode
+	* // fracture algorithm
+	// 3. generate Voronoi pattern
 	if (nodePlacer.nodes.size() < 1) {
 		MGlobal::displayError("Fracture: generate node placement first!");
 		return MStatus::kFailure;
 	}
 	else {
+		// have to do this int-->MString conversion to print int in MGlobal::displayInfo()
 		MString count;
 		count += (int)nodePlacer.nodes.size();
 		MGlobal::displayInfo("Fracture: # nodes = " + count);
 	}
 
-	// TODO: including code below will cause .mll fail to load in Maya ;(
-
-	//Simulation fractureSim(outputFilepathStr);
-	//fractureSim.genFractureUniform(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint);
-
-	//auto shards = fractureSim.getFractureShards();
-	//if (shards.size() > 0) {
-	//	MGlobal::displayInfo("Fracture: # fractures = " + shards.size());
-	//}
-
+	// 4. run fracture pipeline on decomposed mesh
+	*/
     return status;
 }
 

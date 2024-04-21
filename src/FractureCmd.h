@@ -8,8 +8,6 @@
 #include <maya/MDagPath.h>
 #include <maya/MFnMesh.h>
 #include <maya/MFileIO.h>
-#include <string>
-#include "simulation.h"
 
 class FractureCmd : public MPxCommand
 {

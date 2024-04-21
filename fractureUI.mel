@@ -14,8 +14,8 @@ global proc createMenu()
 	
 	setParent $gMainWindow;
 	menu -l "BFX" BFXMenu;
-		menuItem -l "Brittle Fracture" -c displayConfig;
-		//other sub-items;
+		menuItem -l "Mesh Preparation" -c displayConfig;
+		menuItem -l "Brittle Fracture" -c createCompoundNode;
 }
 
 global proc deleteMenu()
@@ -175,6 +175,17 @@ global proc quitConfig()
 	{
 		deleteUI BFXWindow;
 	}
+}
+
+global proc createCompoundNode()
+{
+	createNode transform -n Compound1;
+	createNode mesh -n CompoundShape1 -p Compound1;
+	sets -add initialShadingGroup CompoundShape1;
+	createNode CompoundNode -n CompoundNode1;
+	//connectAttr time1.outTime LSystemNode1.time;
+	connectAttr CompoundNode1.outMesh CompoundShape1.inMesh;
+	polySeparate -ch 1 CompoundShape1;
 }
 
 createMenu();

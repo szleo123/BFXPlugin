@@ -28,22 +28,20 @@ endif()
 # Add source files to the project
 set(BFX_SOURCE_DIR ${CMAKE_SOURCE_DIR}/BFX/src)
 
+file(GLOB_RECURSE PLUGIN_SOURCE_SRCS ${CMAKE_SOURCE_DIR}/src/*.cpp)
+file(GLOB_RECURSE PLUGIN_SOURCE_HEADERS ${CMAKE_SOURCE_DIR}/src/*.h)
+
 set(SOURCES
-    src/NodeCmd.cpp
-    src/PluginMain.cpp
+    # ${BFX_SOURCE_SRCS}
     ${BFX_SOURCE_DIR}/vec.cpp
-    src/NodePlacer.cpp
-    src/NodePlacerNode.cpp
-    src/FractureCmd.cpp
+    ${PLUGIN_SOURCE_SRCS}
 )
 
 # Add header files to the project
 set(HEADERS
-    src/NodeCmd.h
+    # ${BFX_SOURCE_HEADERS}
     ${BFX_SOURCE_DIR}/vec.h
-    src/NodePlacer.h
-    src/NodePlacerNode.h
-    src/FractureCmd.h
+    ${PLUGIN_SOURCE_HEADERS}
 )
 
 find_package(Maya REQUIRED)
