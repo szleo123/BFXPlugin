@@ -26,7 +26,7 @@ private:
 	vec3 minPoint; // corners of the selected mesh's bounding box
 	vec3 maxPoint;
 
-	friend class FractureCmd;
+	friend class CompoundNode;
 };
 
 #endif // !NODEPLACER_H_

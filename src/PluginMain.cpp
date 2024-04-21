@@ -18,6 +18,7 @@
 
 #include "NodeCmd.h"
 #include "FractureCmd.h"
+#include "CompoundNode.h"
 
 MStatus initializePlugin( MObject obj )
 {
@@ -38,10 +39,19 @@ MStatus initializePlugin( MObject obj )
         return status;
     }
 
+    plugin.setName("BFXPlugin");
+
     char buffer[2048];
     // NOTE: make sure the .mel scripts are in the same location as .mll
     sprintf_s(buffer, 2048, "source \"%s/fractureUI.mel\";", pluginPath.asChar());
     MGlobal::executeCommand(buffer, true);
+
+    // Register Node
+    status = plugin.registerNode("CompoundNode",
+        CompoundNode::id,
+        CompoundNode::creator,
+        CompoundNode::initialize);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return status;
 }
@@ -51,6 +61,7 @@ MStatus uninitializePlugin( MObject obj)
     MStatus   status = MStatus::kSuccess;
     MFnPlugin plugin( obj );
 
+    // De-register Command
     status = plugin.deregisterCommand( "NodeCmd" );
     if (!status) {
 	    status.perror("deregisterCommand: NodeCmd");
@@ -62,6 +73,10 @@ MStatus uninitializePlugin( MObject obj)
         status.perror("deregisterCommand: FractureCmd");
         return status;
     }
+
+    // De-register Node
+    status = plugin.deregisterNode(CompoundNode::id);
+    CHECK_MSTATUS_AND_RETURN_IT(status);
 
     return status;
 }
