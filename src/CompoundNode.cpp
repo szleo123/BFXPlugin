@@ -11,6 +11,8 @@
 #include "ConvexMesh.h"
 #include <random>
 
+#define DEBUG 0
+
 MTypeId CompoundNode::id(0x00000231);
 MObject CompoundNode::aOutMesh;
 MObject CompoundNode::aPatternType;
@@ -92,13 +94,41 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 	}
 
 	// Get input values
+#if DEBUG
+	if (nodePlacer.nodes.size() > 0) {
+		MString numNodes;
+		numNodes += (int)nodePlacer.nodes.size();
+		MGlobal::displayInfo("Voro nodes # = " + numNodes);
+
+		for (const auto& node : nodePlacer.nodes) {
+			MString minCornerX, minCornerY, minCornerZ;
+			minCornerX += (double)node.x();
+			minCornerY += (double)node.y();
+			minCornerZ += (double)node.z();
+			MGlobal::displayInfo("node = (" + minCornerX + ", " + minCornerY + ", " + minCornerZ + ")");
+		}
+
+		MString minCornerX, minCornerY, minCornerZ;
+		minCornerX += (double)nodePlacer.minPoint.x();
+		minCornerY += (double)nodePlacer.minPoint.y();
+		minCornerZ += (double)nodePlacer.minPoint.z();
+		MGlobal::displayInfo("Voro minCorner = " + minCornerX + ", " + minCornerY + ", " + minCornerZ);
+
+		MString maxCornerX, maxCornerY, maxCornerZ;
+		maxCornerX += (double)nodePlacer.maxPoint.x();
+		maxCornerY += (double)nodePlacer.maxPoint.y();
+		maxCornerZ += (double)nodePlacer.maxPoint.z();
+		MGlobal::displayInfo("Voro maxCorner = " + maxCornerX + ", " + maxCornerY + ", " + maxCornerZ);
+	}
+#endif
+
 	MString preppedMeshPath = dataBlock.inputValue(aPreppedMeshPath, &status).asString();
 	PatternType patternType = static_cast<PatternType>(dataBlock.inputValue(aPatternType, &status).asInt());
 
 	preppedMeshPath = pluginPath + PREPPED_MESH_FILE.c_str();
 	std::string preppedMeshPathStr = std::string(preppedMeshPath.asChar());
 	Simulation fractureSim(preppedMeshPathStr);
-	fractureSim.genFractureUniform(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint);
+	fractureSim.genFractureUniformDynamic(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint);
 
 	auto shards = fractureSim.getFractureShards();
 	if (shards.size() > 0) {

@@ -29,7 +29,7 @@ public:
 	
 protected:
 	spConvex mConvex;
-	MPoint mPosition; // convex position
+	MPoint mPosition; // convex controid
 	void transform(MPointArray& points, MVectorArray& normals);
 	void initConvexMesh();
 

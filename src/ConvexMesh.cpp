@@ -11,6 +11,9 @@ ConvexMesh::ConvexMesh(const spConvex& convex, const MPoint& pos) :
     mConvex(convex), mPosition(pos)
 {
 	initConvexMesh();
+
+    Eigen::Vector3d centroid = mConvex->centroid;
+    mPosition = MPoint(centroid.x(), centroid.y(), centroid.z());
 }
 
 ConvexMesh::~ConvexMesh() {}
@@ -20,7 +23,10 @@ void ConvexMesh::transform(MPointArray& points, MVectorArray& normals)
     for (int i = 0; i < gPoints.length(); i++)
     {
         MPoint p = gPoints[i];
-        p = p + mPosition; // translation
+        float d = 1.f;
+        MVector direction(mPosition);
+        direction.normalize(); 
+        p = p + MPoint(direction) * d; // translation by a hard-coded distance d
         points.append(p);
 
         // TODO: transform normals if needed

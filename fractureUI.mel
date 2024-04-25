@@ -179,6 +179,10 @@ global proc quitConfig()
 
 global proc createCompoundNode()
 {
+	// set original mesh invisible
+	select -allDagObjects -visible;
+	toggleVisibilityAndKeepSelection `optionVar -query toggleVisibilityAndKeepSelectionBehaviour`;
+
 	createNode transform -n Compound1;
 	createNode mesh -n CompoundShape1 -p Compound1;
 	sets -add initialShadingGroup CompoundShape1;
@@ -186,6 +190,32 @@ global proc createCompoundNode()
 	//connectAttr time1.outTime LSystemNode1.time;
 	connectAttr CompoundNode1.outMesh CompoundShape1.inMesh;
 	polySeparate -ch 1 CompoundShape1;
+
+	// add active rigid bodies to the shards
+	select -r Compound1;
+	string $shapes[] = `listRelatives -c`;
+
+	// create a gravity field with default settings
+	gravity -pos 0 0 0 -m 9.8 -att 0 -dx 0 -dy -1 -dz 0  -mxd -1  -vsh none -vex 0 -vof 0 0 0 -vsw 360 -tsr 0.5 ;
+	
+	// Note: the last element of the Compound is a transform so we don't add rigid body to that.
+	for ($i=0; $i<size($shapes)-1; ++$i)
+	{
+		select -r $shapes[$i];
+		rigidBody -active -m 1 -dp 0 -sf 0.2 -df 0.2 -b 0.6 -l 0 -tf 200 -iv 0 0 0 -iav 0 0 0 -c 0 -pc 0 -i 0 0 0 -imp 0 0 0 -si 0 0 0 -sio none ;
+		connectDynamic -f gravityField1 $shapes[$i];
+	};
+
+	// Optional:
+	// Create a ground plane for collision
+	polyPlane -w 50 -h 50 -sx 10 -sy 10 -ax 0 1 0 -cuv 2 -ch 1;
+	move -r 0 -3 0; // translate along y-axis
+	
+	// Add passive rigid body to it
+	rigidBody -passive -m 1 -dp 0 -sf 0.2 -df 0.2 -b 0.6 -l 0 -tf 200 -iv 0 0 0 -iav 0 0 0 -c 0 -pc 0 -i 0 0 0 -imp 0 0 0 -si 0 0 0 -sio none ;
+	
+	// Begin playback from min to max timeframe
+	play -forward true;
 }
 
 createMenu();
