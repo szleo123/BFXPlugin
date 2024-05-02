@@ -16,7 +16,8 @@ Authors: Yilin Li and Linda Zhu
 7. After the project is built, put `fractureUI.mel` in the same directory as the built `.mll` plugin.
    * By default, the `.mll` file is under `/build/bin/[Debug or Release]`.
 8. Put `coacd.exe` in the same directoy as `.mll`.
-9. Now you should be able to load the plugin into Maya.
+9. Copy and paste `mpfr-6.dll` and `gmp-10.cll` from the build folder to Maya's library folder `{Your installation path}/Maya2022/bin`.
+10. Now you should be able to load the plugin into Maya.
 
 ## Dev Notes
 ### Running BFXViewer inside this project
