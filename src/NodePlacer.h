@@ -31,7 +31,8 @@ private:
 	Eigen::Vector3d maxPoint;
 
 	friend class CompoundNode;
-	friend class NodeCmd;
+	friend class NodeCmd; // TODO: delete
+	friend class FractureCmd;
 };
 
 #endif // !NODEPLACER_H_

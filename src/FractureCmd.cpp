@@ -1,4 +1,5 @@
 #include "FractureCmd.h"
+#include "NodeCmd.h"
 
 #include <maya/MGlobal.h>
 #include <maya/MArgDatabase.h>
@@ -54,10 +55,10 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	}
 
 	// Get the first selected shape and convert it to MFnMesh
-	MDagPath dagPath;
-	status = selection.getDagPath(0, dagPath);
-	status = dagPath.extendToShape();
-	MFnMesh selectedMesh(dagPath.node());
+	MDagPath selectedPathMesh;
+	status = selection.getDagPath(0, selectedPathMesh);
+	status = selectedPathMesh.extendToShape();
+	MFnMesh selectedMesh(selectedPathMesh.node());
 
 	/**
 	 *	Mesh Preparation
@@ -103,22 +104,55 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo("CoACD: Found " + outputFilepath);
 	}
 
-	/* move the operations below to CompoundNode
-	* // fracture algorithm
+	// fracture algorithm
 	// 3. generate Voronoi pattern
-	if (nodePlacer.nodes.size() < 1) {
+	int numNodes = nodePlacer.nodes.size();
+	if (numNodes < 1) {
 		MGlobal::displayError("Fracture: generate node placement first!");
 		return MStatus::kFailure;
 	}
 	else {
-		// have to do this int-->MString conversion to print int in MGlobal::displayInfo()
-		MString count;
-		count += (int)nodePlacer.nodes.size();
-		MGlobal::displayInfo("Fracture: # nodes = " + count);
+		MDagPath selectedPathParenting; // the old selectedPath is modified and specifically for mesh shape use
+		status = selection.getDagPath(0, selectedPathParenting);
+		MFnDagNode fnSelected(selectedPathParenting);
+
+		// reset the number of nodes if different
+		// childCount - 1 to exclude the mesh shape node
+		int numChildren = fnSelected.childCount() - 1;
+		bool resetNodes = numChildren != numNodes;
+		if (resetNodes) {
+			MString nodeCount, childCount;
+			nodeCount += numNodes;
+			childCount += numChildren;
+			MGlobal::displayInfo("Fracture: "+nodeCount+" nodes generated but "+ fnSelected.name()+" has "+childCount+" children. Repopulating nodes...");
+			
+			nodePlacer.nodes.clear();
+			nodePlacer.setNodeNumber(numChildren);
+		}
+		
+		for (int i = 0; i < numChildren; i++) {
+			// retrieve child's global position and update nodePlacer
+			MObject child = fnSelected.child(i+1);
+			MFnTransform childTransform(child);
+			MVector translation = childTransform.getTranslation(MSpace::kObject);
+			//MString minCornerX, minCornerY, minCornerZ;
+			//minCornerX += (double)translation.x;
+			//minCornerY += (double)translation.y;
+			//minCornerZ += (double)translation.z;
+			//MGlobal::displayInfo("Fracture: child " + childTransform.name() + " ("+minCornerX+", "+minCornerY+", "+minCornerZ+")");
+
+			if (resetNodes) {
+				nodePlacer.nodes.push_back(Eigen::Vector3d(translation.x, translation.y, translation.z));
+			}
+			else {
+				nodePlacer.nodes[i] = Eigen::Vector3d(translation.x, translation.y, translation.z);
+			}
+		}
+		nodePlacer.recalculateAABB();
 	}
 
-	// 4. run fracture pipeline on decomposed mesh
-	*/
+	// 4. -->CompoundNode.h: run fracture pipeline on decomposed mesh
+
     return status;
 }
 

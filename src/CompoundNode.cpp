@@ -92,8 +92,6 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 	}
 
 	// Get input values
-	nodePlacer.recalculateAABB();
-
 #if DEBUG
 	if (nodePlacer.nodes.size() > 0) {
 		MString numNodes;
