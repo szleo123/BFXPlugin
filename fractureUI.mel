@@ -60,8 +60,8 @@ global proc displayConfig()
 	frameLayout -collapsable true -label "Node Placement";
 		columnLayout -adjustableColumn true;
 		rowLayout -numberOfColumns 3 -ad3 1; 
-		intSliderGrp -l "Num of Nodes" -f true -fmn 0 -fmx 50 -min 1 -max 20 -v 10 "numSlider";
-		button -l "Place Nodes" -c "int $num = `intSliderGrp -q -v numSlider`; NodeCmd -number $num;";
+		intSliderGrp -l "Num of Nodes" -f true -fmn 0 -fmx 50 -min 1 -max 100 -v 10 "numSlider";
+		button -l "Place Nodes" -c "int $num = `intSliderGrp -q -v numSlider`; createBox($num)";
 		button -l "Delete Nodes" -c deleteChildrenOfSelected;
 		setParent ..;
 		
@@ -217,5 +217,47 @@ global proc createCompoundNode()
 	// Begin playback from min to max timeframe
 	play -forward true;
 }
+
+global proc createBox(int $numOfNodes)
+{
+    // Check if one mesh is selected
+    string $selection[] = `ls -sl -type "transform"`;
+    if(size($selection) != 1) {
+        error "Please select exactly one mesh.";
+    }
+
+    string $mesh = $selection[0];
+    float $translationMesh[] = `xform -q -os -t $mesh`;
+    float $scaleMesh[] = `xform -q -os -s $mesh`;
+    xform -os -t 0 0 0 $mesh; 
+    xform -os -s 1 1 1 $mesh; 
+    // Create bounding box as wireframe and set as child of the mesh
+    float $bbox[] = `polyEvaluate -b $mesh`;
+    string $bboxName = $mesh + "_bbox";
+    string $bboxCtrl = `curve -n $bboxName -d 1 -p $bbox[0] $bbox[2] $bbox[3] -p $bbox[1] $bbox[2] $bbox[3] -p $bbox[1] $bbox[5] $bbox[3] -p $bbox[0] $bbox[5] $bbox[3] -p $bbox[0] $bbox[2] $bbox[3] -p $bbox[0] $bbox[2] $bbox[4] -p $bbox[0] $bbox[5] $bbox[4] -p $bbox[0] $bbox[5] $bbox[3] -p $bbox[0] $bbox[5] $bbox[4] -p $bbox[1] $bbox[5] $bbox[4] -p $bbox[1] $bbox[5] $bbox[3] -p $bbox[1] $bbox[5] $bbox[4] -p $bbox[1] $bbox[2] $bbox[4] -p $bbox[1] $bbox[2] $bbox[3] -p $bbox[1] $bbox[2] $bbox[4] -p $bbox[0] $bbox[2] $bbox[4]`;
+    transformLimits -tx $bbox[0] $bbox[1] -ty $bbox[2] $bbox[3] -tz $bbox[4] $bbox[5] -etx 1 1 -ety 1 1 -etz 1 1 ;
+    parent $bboxCtrl $mesh;
+
+    // Create 10 little spheres within the bounding box
+    float $sphereRadius = min(min($bbox[1] - $bbox[0], $bbox[3] - $bbox[2]), $bbox[5] - $bbox[4]) * 0.02;
+    float $meshScale[] = `xform -q -ws -s $mesh`;
+    float $boxScale[] = `xform -q -ws -s $bboxCtrl`;
+    print($scaleMesh);
+    //float $scaleFactor[] = {1.0 / $parentScale[0], 1.0 / $parentScale[1], 1.0 / $parentScale[2]}
+    for ($i = 0; $i < $numOfNodes; $i++) {
+        string $sphereName = $mesh + "_node" + $i;
+        string $sphere[] = `polySphere -n $sphereName -r $sphereRadius`;
+        parent $sphere[0] $bboxCtrl;
+        float $randX = rand($bbox[0], $bbox[1]);
+        float $randY = rand($bbox[2], $bbox[5]);
+        float $randZ = rand($bbox[3], $bbox[4]);
+        move -r $randX $randY $randZ; 
+        transformLimits -tx $bbox[0] $bbox[1] -ty $bbox[2] $bbox[3] -tz $bbox[4] $bbox[5] -etx 1 1 -ety 1 1 -etz 1 1 ;
+    }
+
+    xform -os -s $scaleMesh[0] $scaleMesh[1] $scaleMesh[2] $mesh; 
+    xform -os -t $translationMesh[0] $translationMesh[1] $translationMesh[2] $mesh; 
+}
+
 
 createMenu();
