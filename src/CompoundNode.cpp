@@ -11,8 +11,6 @@
 #include "ConvexMesh.h"
 #include <random>
 
-#define DEBUG 0
-
 MTypeId CompoundNode::id(0x00000231);
 MObject CompoundNode::aOutMesh;
 MObject CompoundNode::aPatternType;
@@ -94,6 +92,8 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 	}
 
 	// Get input values
+	nodePlacer.recalculateAABB();
+
 #if DEBUG
 	if (nodePlacer.nodes.size() > 0) {
 		MString numNodes;

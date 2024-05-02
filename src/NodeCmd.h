@@ -17,7 +17,6 @@
 #include <maya/MFnTransform.h>
 #include <maya/MIntArray.h>
 #include <string>
-#include "vec.h"
 
 #include "NodePlacer.h"
 

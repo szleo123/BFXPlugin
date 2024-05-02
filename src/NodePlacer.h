@@ -3,7 +3,10 @@
 
 #include <vector>
 #include <string>
-#include "vec.h"
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
+#define DEBUG 1
 
 class NodePlacer
 {
@@ -12,21 +15,23 @@ public:
 	~NodePlacer() {}; 
 	// Set/get inputs
 	void setNodeNumber(int num);
-	void setAABB(vec3 minp, vec3 maxp); 
+	void setAABB(Eigen::Vector3d minp, Eigen::Vector3d maxp); 
+	void recalculateAABB();
 
-	std::vector<vec3> getNodes();
+	std::vector<Eigen::Vector3d> getNodes();
 	
 	// generate initial random nodes
 	void generateNodes(std::string method);
 	
 	
 private:
-	std::vector<vec3> nodes; 
+	std::vector<Eigen::Vector3d> nodes; 
 	int numOfNodes; 
-	vec3 minPoint; // corners of the selected mesh's bounding box
-	vec3 maxPoint;
+	Eigen::Vector3d minPoint; // corners of the selected mesh's bounding box
+	Eigen::Vector3d maxPoint;
 
 	friend class CompoundNode;
+	friend class NodeCmd;
 };
 
 #endif // !NODEPLACER_H_

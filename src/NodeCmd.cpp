@@ -22,7 +22,7 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	MStatus status;
 	int number = 8; 
 	std::string method = "uniform";
-	vec3 minP, maxP;
+	Eigen::Vector3d minP, maxP;
 	// parse the arguments 
 	for (unsigned int i = 0; i < argList.length(); i++) {
 		if (MString("-number") == argList.asString(i, &status) || MString("-n") == argList.asString(i, &status)) {
@@ -75,23 +75,22 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 			return status;
 		}
 	}
-	
 
 	// setup AABB for the node placer 
-	minP = vec3(boundingBox.min()[0], boundingBox.min()[1], boundingBox.min()[2]);
-	maxP = vec3(boundingBox.max()[0], boundingBox.max()[1], boundingBox.max()[2]);
+	minP = Eigen::Vector3d(boundingBox.min()[0], boundingBox.min()[1], boundingBox.min()[2]);
+	maxP = Eigen::Vector3d(boundingBox.max()[0], boundingBox.max()[1], boundingBox.max()[2]);
 
 	// calculate the sphere radius for visualization purpose
 	double half_width = boundingBox.width() * 0.5; 
 	double half_height = boundingBox.height() * 0.5; 
 	double half_depth = boundingBox.depth() * 0.5; 
-	double sphereSize = min(half_width, min(half_height, half_depth)) * SPHERE_MULTIPLIER * 2;
+	double sphereSize = std::min(half_width, std::min(half_height, half_depth)) * SPHERE_MULTIPLIER * 2;
 
 	// Run the NodePlacer
 	nodePlacer.setNodeNumber(number); 
 	nodePlacer.setAABB(minP, maxP);
 	nodePlacer.generateNodes(method); 
-	std::vector<vec3> points = nodePlacer.getNodes(); 
+	std::vector<Eigen::Vector3d> points = nodePlacer.getNodes();
 
 	// prepare mel scripts
 	MString p1 = "string $sphere[] = `polySphere -r ";
@@ -115,11 +114,40 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	for (auto& p : points) {
 		status = MGlobal::executeCommand(p1);
 		status = MGlobal::executeCommand("parent $sphere[0] $object;");
-		status = MGlobal::executeCommand(p21 + p.printPos().c_str() + p22);
+		std::string pos = std::to_string(p[0]) + " " + std::to_string(p[1]) + " " + std::to_string(p[2]);
+		status = MGlobal::executeCommand(p21 + pos.c_str() + p22);
 		
 		status = MGlobal::executeCommand(p3); 
 	}
 	status = MGlobal::executeCommand("scale -r $oldX $oldY $oldZ $object;");
+
+#if DEBUG
+	if (nodePlacer.nodes.size() > 0) {
+		MString numNodes;
+		numNodes += (int)nodePlacer.nodes.size();
+		MGlobal::displayInfo("Voro nodes # = " + numNodes);
+
+		for (const auto& node : nodePlacer.nodes) {
+			MString minCornerX, minCornerY, minCornerZ;
+			minCornerX += (double)node.x();
+			minCornerY += (double)node.y();
+			minCornerZ += (double)node.z();
+			MGlobal::displayInfo("node = (" + minCornerX + ", " + minCornerY + ", " + minCornerZ + ")");
+		}
+
+		MString minCornerX, minCornerY, minCornerZ;
+		minCornerX += (double)nodePlacer.minPoint.x();
+		minCornerY += (double)nodePlacer.minPoint.y();
+		minCornerZ += (double)nodePlacer.minPoint.z();
+		MGlobal::displayInfo("Voro minCorner = " + minCornerX + ", " + minCornerY + ", " + minCornerZ);
+
+		MString maxCornerX, maxCornerY, maxCornerZ;
+		maxCornerX += (double)nodePlacer.maxPoint.x();
+		maxCornerY += (double)nodePlacer.maxPoint.y();
+		maxCornerZ += (double)nodePlacer.maxPoint.z();
+		MGlobal::displayInfo("Voro maxCorner = " + maxCornerX + ", " + maxCornerY + ", " + maxCornerZ);
+	}
+#endif
 
     return MStatus::kSuccess;
 }

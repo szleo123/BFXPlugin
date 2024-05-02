@@ -72,9 +72,9 @@ MStatus NodePlacerNode::compute(const MPlug& plug, MDataBlock& dataBlock) {
 	// Get input values
 	int number = dataBlock.inputValue(aDefaultNumber).asInt();
 	auto minpointDB = dataBlock.inputValue(aDefaultMinP).asDouble3();
-	vec3 minpoint = vec3(minpointDB[0], minpointDB[1], minpointDB[2]);
+	Eigen::Vector3d minpoint = Eigen::Vector3d(minpointDB[0], minpointDB[1], minpointDB[2]);
 	auto maxpointDB = dataBlock.inputValue(aDefaultMaxP).asDouble3();
-	vec3 maxpoint = vec3(maxpointDB[0], maxpointDB[1], maxpointDB[2]);
+	Eigen::Vector3d maxpoint = Eigen::Vector3d(maxpointDB[0], maxpointDB[1], maxpointDB[2]);
 	MString method = dataBlock.inputValue(aDefaultMethod).asString();
 
 	// create the NodePlacer
@@ -84,7 +84,7 @@ MStatus NodePlacerNode::compute(const MPlug& plug, MDataBlock& dataBlock) {
 
 	// process the NodePlacer
 	nodeplacer.generateNodes(method.asChar()); 
-	std::vector<vec3> positions = nodeplacer.getNodes();
+	std::vector<Eigen::Vector3d> positions = nodeplacer.getNodes();
 	//MPointArray points;
 	//MIntArray faceCounts;
 	//MIntArray faceConnects;
