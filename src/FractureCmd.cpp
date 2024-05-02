@@ -111,7 +111,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayError("Fracture: generate node placement first!");
 		return MStatus::kFailure;
 	}
-	else {
+	/*else {
 		MDagPath selectedPathParenting; // the old selectedPath is modified and specifically for mesh shape use
 		status = selection.getDagPath(0, selectedPathParenting);
 		MFnDagNode fnSelected(selectedPathParenting);
@@ -152,7 +152,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	}
 
 	// 4. -->CompoundNode.h: run fracture pipeline on decomposed mesh
-
+	*/
     return status;
 }
 

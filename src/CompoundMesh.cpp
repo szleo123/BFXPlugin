@@ -1,24 +1,23 @@
-#include "ConvexMesh.h"
+#include "CompoundMesh.h"
 #include <maya/MMatrix.h>
 #include <math.h>
 
-MPointArray ConvexMesh::gPoints;
-MVectorArray ConvexMesh::gNormals;
-MIntArray ConvexMesh::gFaceCounts;
-MIntArray ConvexMesh::gFaceConnects;
+MPointArray CompoundMesh::gPoints;
+MVectorArray CompoundMesh::gNormals;
+MIntArray CompoundMesh::gFaceCounts;
+MIntArray CompoundMesh::gFaceConnects;
 
-ConvexMesh::ConvexMesh(const spConvex& convex) :
-    mConvex(convex)
+CompoundMesh::CompoundMesh(const Compound& compound)
 {
-	initConvexMesh();
+	initCompoundMesh(compound);
 
-    Eigen::Vector3d centroid = mConvex->centroid;
+    Eigen::Vector3d centroid = compound.centroid;
     mPosition = MPoint(centroid.x(), centroid.y(), centroid.z());
 }
 
-ConvexMesh::~ConvexMesh() {}
+CompoundMesh::~CompoundMesh() {}
 
-void ConvexMesh::transform(MPointArray& points, MVectorArray& normals)
+void CompoundMesh::transform(MPointArray& points, MVectorArray& normals)
 {
     for (int i = 0; i < gPoints.length(); i++)
     {
@@ -33,7 +32,7 @@ void ConvexMesh::transform(MPointArray& points, MVectorArray& normals)
     }
 }
 
-void ConvexMesh::getMesh(
+void CompoundMesh::getMesh(
     MPointArray& points,
     MIntArray& faceCounts,
     MIntArray& faceConnects)
@@ -45,7 +44,7 @@ void ConvexMesh::getMesh(
     faceConnects = gFaceConnects;
 }
 
-void ConvexMesh::appendToMesh(
+void CompoundMesh::appendToMesh(
     MPointArray& points,
     MIntArray& faceCounts,
     MIntArray& faceConnects)
@@ -70,7 +69,7 @@ void ConvexMesh::appendToMesh(
     }
 }
 
-void ConvexMesh::initConvexMesh()
+void CompoundMesh::initCompoundMesh(const Compound& compound)
 {
     // Add points and normals
     gPoints.clear();
@@ -78,20 +77,34 @@ void ConvexMesh::initConvexMesh()
     gFaceCounts.clear();
     gFaceConnects.clear();
 
+    // combine convex data into one
+    for (const auto& shard : compound.convexes)
+    {
+        int numVerts = mTotalVertices.size();
+        int numFaces = mTotalFaceIndices.size();
+        mTotalVertices.insert(mTotalVertices.end(), shard->vertices.begin(), shard->vertices.end());
+        mTotalFaceIndices.insert(mTotalFaceIndices.end(), shard->faces.begin(), shard->faces.end());
+        for (int i = numFaces; i < mTotalFaceIndices.size(); i++) {
+            mTotalFaceIndices[i][0] += numVerts;
+            mTotalFaceIndices[i][1] += numVerts;
+            mTotalFaceIndices[i][2] += numVerts;
+        }
+    }
+
     // set vertices
-    for (const auto& vert : mConvex->vertices)
+    for (const auto& vert : mTotalVertices)
     {
         gPoints.append(MPoint(vert.x(), vert.y(), vert.z()));
     }
 
     // set face vert indices
-    for (int i = 0; i < mConvex->faces.size(); i++)
+    for (int i = 0; i < mTotalFaceIndices.size(); i++)
     {
-        const auto& face = mConvex->faces[i];
+        const auto& face = mTotalFaceIndices[i];
         gFaceCounts.append(face.size());
 
-        Eigen::Vector3d edge1 = mConvex->vertices[face[0]] - mConvex->vertices[face[1]];
-        Eigen::Vector3d edge2 = mConvex->vertices[face[0]] - mConvex->vertices[face[2]];
+        Eigen::Vector3d edge1 = mTotalVertices[face[0]] - mTotalVertices[face[1]];
+        Eigen::Vector3d edge2 = mTotalVertices[face[0]] - mTotalVertices[face[2]];
         Eigen::Vector3d normal = edge1.cross(edge2);
         for (const auto& index : face)
         {

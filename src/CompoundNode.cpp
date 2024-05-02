@@ -9,6 +9,7 @@
 
 #include "CompoundNode.h"
 #include "ConvexMesh.h"
+#include "CompoundMesh.h"
 #include <random>
 
 MTypeId CompoundNode::id(0x00000231);
@@ -165,16 +166,8 @@ MObject CompoundNode::createMesh(
 	int radius = 0;
 	for (const auto& compound : shards)
 	{
-		for (const auto& shard : compound.convexes)
-		{
-			MPoint pos; // for visualization only: random position to discard the shards
-			pos = MPoint(radius * (double)rand() / RAND_MAX, 
-				radius * (double)rand() / RAND_MAX, 
-				radius * (double)rand() / RAND_MAX);
-
-			ConvexMesh convex(shard, pos);
-			convex.appendToMesh(points, faceCounts, faceConnects);
-		}
+		CompoundMesh comp(compound);
+		comp.appendToMesh(points, faceCounts, faceConnects);
 	}
 
 	MObject newMesh = mesh.create(points.length(), faceCounts.length(),

@@ -9,11 +9,11 @@
 #include <maya/MDoubleArray.h>
 #include "clipper.h"
 
-class ConvexMesh
+class CompoundMesh
 {
 public:
-	ConvexMesh(const spConvex& convex);
-	~ConvexMesh();
+	CompoundMesh(const Compound& compound);
+	~CompoundMesh();
 
 	void getMesh(
 		MPointArray& points,
@@ -26,12 +26,14 @@ public:
 		MIntArray& faceCounts,
 		MIntArray& faceConnects
 	);
-	
+
 protected:
-	spConvex mConvex;
-	MPoint mPosition; // convex controid
+	std::vector<Eigen::Vector3d> mTotalVertices;
+	std::vector<std::vector<int>> mTotalFaceIndices;
+	MPoint mPosition; // compound controid
+	
 	void transform(MPointArray& points, MVectorArray& normals);
-	void initConvexMesh();
+	void initCompoundMesh(const Compound& compound);
 
 	static MPointArray gPoints;
 	static MVectorArray gNormals;
