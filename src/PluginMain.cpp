@@ -25,6 +25,7 @@ MStatus initializePlugin( MObject obj )
     MStatus   status = MStatus::kSuccess;
     MFnPlugin plugin( obj, "BFXPlugin", "1.0", "Any");
     MString pluginPath = plugin.loadPath();
+    plugin.setName("BFXPlugin");
 
     // Register Commands
     status = plugin.registerCommand( "NodeCmd", NodeCmd::creator );
@@ -38,8 +39,6 @@ MStatus initializePlugin( MObject obj )
         status.perror("registerCommand: FractureCmd");
         return status;
     }
-
-    plugin.setName("BFXPlugin");
 
     char buffer[2048];
     // NOTE: make sure the .mel scripts are in the same location as .mll

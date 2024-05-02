@@ -21,7 +21,7 @@ Authors: Yilin Li and Linda Zhu
 
 ## Dev Notes
 ### Running BFXViewer inside this project
-You need to change the relative path of the input OBJs because e.g. `../asset/obj/cube.obj` doesn't refer to the same location as in the standalone test app any more.
+Simply go to the build directoy where `.mll` is located. Double-click on `BFXViewer.exe`.
 
 ### [Git - Submodules](https://git-scm.com/book/en/v2/Git-Tools-Submodules)
 ### Updating a repository that contains submodules

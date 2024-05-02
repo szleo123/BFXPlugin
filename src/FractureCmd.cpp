@@ -1,6 +1,12 @@
 #include "FractureCmd.h"
 #include "NodeCmd.h"
 
+#define MNoPluginEntry
+#define MNoVersionString
+#include <maya/MFnPlugin.h>
+#undef MNoPluginEntry
+#undef MNoVersionString
+
 #include <maya/MGlobal.h>
 #include <maya/MArgDatabase.h>
 #include <list>
@@ -63,17 +69,23 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	/**
 	 *	Mesh Preparation
 	**/
-	// 1. Save the selected mesh to the current workspace directory as an OBJ
-	MCommandResult workspaceResult;
-	status = MGlobal::executeCommand("workspace -q -dir", workspaceResult);
-	MString currWorkspace = workspaceResult.stringResult();
+	// 1. Save the selected mesh to the current directory as an OBJ
+	// retrieve the loaded plugin path
+	MObject pluginObj = MFnPlugin::findPlugin("BFXPlugin");
+	if (pluginObj == MObject::kNullObj)
+	{
+		MGlobal::displayError("BFX plugin not loaded!");
+		return MS::kFailure;
+	}
+	MFnPlugin plugin(pluginObj);
+	MString pluginPath = plugin.loadPath();
 	
 	MStringArray substringList;
 	selectedMesh.name().split(':', substringList);
 	MString filename = substringList[0];
 
-	MString inputFilepath = "\"" + currWorkspace /*+ filename*/ + "input.obj\"";
-	bool inputExists = std::filesystem::exists(std::string((currWorkspace /*+ filename*/ + "input.obj").asChar()));
+	MString inputFilepath = "\"" + pluginPath /*+ filename*/ + "/input.obj\"";
+	bool inputExists = std::filesystem::exists(std::string((pluginPath /*+ filename*/ + "/input.obj").asChar()));
 	if (!inputExists) {
 		MString options = "\"groups=1;ptgroups=1;materials=0;smoothing=0;normals=1\"";
 		MString objExportCmd = "file -force -options " + options + " -typ \"OBJexport\" -pr -es " + inputFilepath;
@@ -93,8 +105,8 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	}
 
 	// 2. generate CoACD convex hulls
-	MString outputFilepath = "\"" + currWorkspace /*+ filename*/ + "output.obj\"";
-	std::string outputFilepathStr = std::string((currWorkspace /*+ filename*/ + "output.obj").asChar());
+	MString outputFilepath = "\"" + pluginPath /*+ filename*/ + "/output.obj\"";
+	std::string outputFilepathStr = std::string((pluginPath /*+ filename*/ + "/output.obj").asChar());
 	bool outputExists = std::filesystem::exists(outputFilepathStr);
 	if (!outputExists) {
 		MGlobal::displayError("CoACD: Failed generating " + outputFilepath);

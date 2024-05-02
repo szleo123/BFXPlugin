@@ -145,14 +145,16 @@ global proc displayConfig()
 
 global proc runCoACD()
 {
-	// TODO: better file relative path
 	// currently assuming all the assets and coacd.exe are in the same dir as .mll
-	string $wk = `workspace -q -dir`;
+	string $pluginName = "BFXPlugin";
+	string $fullpath = `pluginInfo -q -path -name $pluginName`;
+	string $wk = substituteAllString($fullpath, $pluginName + ".mll", "");
+
 	string $coacdPath = $wk + "coacd.exe";
 	string $inputPath = $wk + "input.obj";
 	string $outputPath = $wk + "output.obj";
 	string $remeshPath = $wk + "remesh.obj";
-	//print($coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\n");
+	print($coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\n");
 
 	system("\"" + $coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\"");
 }
@@ -204,6 +206,9 @@ global proc createCompoundNode()
 		select -r $shapes[$i];
 		rigidBody -active -m 1 -dp 0 -sf 0.2 -df 0.2 -b 0.6 -l 0 -tf 200 -iv 0 0 0 -iav 0 0 0 -c 0 -pc 0 -i 0 0 0 -imp 0 0 0 -si 0 0 0 -sio none ;
 		connectDynamic -f gravityField1 $shapes[$i];
+
+		// reset face normals for a smooth appearance
+		expandPolyGroupSelection;polySetToFaceNormal ; 
 	};
 
 	// Optional:
@@ -215,7 +220,7 @@ global proc createCompoundNode()
 	rigidBody -passive -m 1 -dp 0 -sf 0.2 -df 0.2 -b 0.6 -l 0 -tf 200 -iv 0 0 0 -iav 0 0 0 -c 0 -pc 0 -i 0 0 0 -imp 0 0 0 -si 0 0 0 -sio none ;
 	
 	// Begin playback from min to max timeframe
-	play -forward true;
+	// play -forward true;
 }
 
 createMenu();
