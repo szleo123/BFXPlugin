@@ -232,6 +232,7 @@ global proc createBox(int $numOfNodes)
     }
 
     string $mesh = $selection[0];
+    xform -cp $mesh;
     float $translationMesh[] = `xform -q -os -t $mesh`;
     float $scaleMesh[] = `xform -q -os -s $mesh`;
     xform -os -t 0 0 0 $mesh; 
@@ -239,7 +240,7 @@ global proc createBox(int $numOfNodes)
     // Create bounding box as wireframe and set as child of the mesh
     float $bbox[] = `polyEvaluate -b $mesh`;
     string $bboxName = $mesh + "_bbox";
-    string $bboxCtrl = `curve -n $bboxName -d 1 -p $bbox[0] $bbox[2] $bbox[3] -p $bbox[1] $bbox[2] $bbox[3] -p $bbox[1] $bbox[5] $bbox[3] -p $bbox[0] $bbox[5] $bbox[3] -p $bbox[0] $bbox[2] $bbox[3] -p $bbox[0] $bbox[2] $bbox[4] -p $bbox[0] $bbox[5] $bbox[4] -p $bbox[0] $bbox[5] $bbox[3] -p $bbox[0] $bbox[5] $bbox[4] -p $bbox[1] $bbox[5] $bbox[4] -p $bbox[1] $bbox[5] $bbox[3] -p $bbox[1] $bbox[5] $bbox[4] -p $bbox[1] $bbox[2] $bbox[4] -p $bbox[1] $bbox[2] $bbox[3] -p $bbox[1] $bbox[2] $bbox[4] -p $bbox[0] $bbox[2] $bbox[4]`;
+    string $bboxCtrl = `curve -n $bboxName -d 1 -p $bbox[0] $bbox[2] $bbox[4] -p $bbox[1] $bbox[2] $bbox[4] -p $bbox[1] $bbox[3] $bbox[4] -p $bbox[0] $bbox[3] $bbox[4] -p $bbox[0] $bbox[2] $bbox[4] -p $bbox[0] $bbox[2] $bbox[5] -p $bbox[1] $bbox[2] $bbox[5] -p $bbox[1] $bbox[3] $bbox[5] -p $bbox[0] $bbox[3] $bbox[5] -p $bbox[0] $bbox[2] $bbox[5] -p $bbox[0] $bbox[3] $bbox[5] -p $bbox[0] $bbox[3] $bbox[4] -p $bbox[1] $bbox[3] $bbox[4] -p $bbox[1] $bbox[3] $bbox[5] -p $bbox[1] $bbox[2] $bbox[5] -p $bbox[1] $bbox[2] $bbox[4]`;
     transformLimits -tx $bbox[0] $bbox[1] -ty $bbox[2] $bbox[3] -tz $bbox[4] $bbox[5] -etx 1 1 -ety 1 1 -etz 1 1 ;
     parent $bboxCtrl $mesh;
 
