@@ -1,5 +1,4 @@
-#ifndef NODEPLACER_H_
-#define NODEPLACER_H_
+#pragma once
 
 #include <vector>
 #include <string>
@@ -31,8 +30,7 @@ private:
 	Eigen::Vector3d maxPoint;
 
 	friend class CompoundNode;
-	friend class NodeCmd; // TODO: delete
 	friend class FractureCmd;
 };
 
-#endif // !NODEPLACER_H_
+extern NodePlacer gNodePlacer; // TODO: make a static shared data class to communicate between commands

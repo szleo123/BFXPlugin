@@ -6,7 +6,9 @@
 #include <maya/MFnUnitAttribute.h>
 #include <maya/MFnMeshData.h>
 
-#include "NodeCmd.h"
+#include "NodePlacer.h"
+#include "ConvexMesh.h"
+#include "CompoundMesh.h"
 #include "simulation.h"
 
 enum PatternType {

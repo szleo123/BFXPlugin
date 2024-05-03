@@ -1,5 +1,5 @@
 #include "FractureCmd.h"
-#include "NodeCmd.h"
+#include "NodePlacer.h"
 
 #define MNoPluginEntry
 #define MNoVersionString
@@ -63,6 +63,13 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	// Get the first selected shape and convert it to MFnMesh
 	MDagPath selectedPathMesh;
 	status = selection.getDagPath(0, selectedPathMesh);
+
+	if (!selectedPathMesh.hasFn(MFn::kMesh))
+	{
+		MGlobal::displayError("The selected object has no mesh.");
+		return MStatus::kFailure;
+	}
+
 	status = selectedPathMesh.extendToShape();
 	MFnMesh selectedMesh(selectedPathMesh.node());
 
@@ -70,7 +77,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	 *	Mesh Preparation
 	**/
 	// 1. Save the selected mesh to the current directory as an OBJ
-	// retrieve the loaded plugin path
+	// Retrieve the loaded plugin path
 	MObject pluginObj = MFnPlugin::findPlugin("BFXPlugin");
 	if (pluginObj == MObject::kNullObj)
 	{
@@ -79,7 +86,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	}
 	MFnPlugin plugin(pluginObj);
 	MString pluginPath = plugin.loadPath();
-	
+
 	MStringArray substringList;
 	selectedMesh.name().split(':', substringList);
 	MString filename = substringList[0];
@@ -104,7 +111,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo("Export: Found " + inputFilepath);
 	}
 
-	// 2. generate CoACD convex hulls
+	// 2. Generate CoACD convex hulls
 	MString outputFilepath = "\"" + pluginPath /*+ filename*/ + "/output.obj\"";
 	std::string outputFilepathStr = std::string((pluginPath /*+ filename*/ + "/output.obj").asChar());
 	bool outputExists = std::filesystem::exists(outputFilepathStr);
@@ -116,55 +123,71 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		MGlobal::displayInfo("CoACD: Found " + outputFilepath);
 	}
 
-	// fracture algorithm
-	// 3. generate Voronoi pattern
-	int numNodes = nodePlacer.nodes.size();
-	if (numNodes < 1) {
-		MGlobal::displayError("Fracture: generate node placement first!");
-		return MStatus::kFailure;
+	// Fracture algorithm
+	// 3. Generate Voronoi pattern
+	MDagPath selectedPathParenting; // the old selectedPath is modified and specifically for mesh shape use
+	status = selection.getDagPath(0, selectedPathParenting);
+	MFnDagNode fnSelected(selectedPathParenting);
+	
+	if (fnSelected.childCount() < 2) {
+		MGlobal::displayInfo("Fracture: "+ fnSelected.name() + " has no nodes. Using the default 10-Cell Voronoi pattern...");
+		return status;
 	}
-	/*else {
-		MDagPath selectedPathParenting; // the old selectedPath is modified and specifically for mesh shape use
-		status = selection.getDagPath(0, selectedPathParenting);
-		MFnDagNode fnSelected(selectedPathParenting);
 
-		// reset the number of nodes if different
-		// childCount - 1 to exclude the mesh shape node
-		int numChildren = fnSelected.childCount() - 1;
-		bool resetNodes = numChildren != numNodes;
-		if (resetNodes) {
-			MString nodeCount, childCount;
-			nodeCount += numNodes;
-			childCount += numChildren;
-			MGlobal::displayInfo("Fracture: "+nodeCount+" nodes generated but "+ fnSelected.name()+" has "+childCount+" children. Repopulating nodes...");
+	// set min/maxPoint in NodePlacer
+	MDagPath selectedPathBBox;
+	MBoundingBox boundingBox;
+
+	MObject bbox = fnSelected.child(1);
+	status = MDagPath::getAPathTo(bbox, selectedPathBBox);
+	MFnDagNode fnBBox(selectedPathBBox);
+	boundingBox = fnBBox.boundingBox(&status);
+	if (status != MS::kSuccess) {
+		MGlobal::displayError("Failed to get bounding box of " + fnBBox.absoluteName());
+		return status;
+	}
+
+	Eigen::Vector3d minP(boundingBox.min()[0], boundingBox.min()[1], boundingBox.min()[2]);
+	Eigen::Vector3d maxP(boundingBox.max()[0], boundingBox.max()[1], boundingBox.max()[2]);
+	gNodePlacer.setAABB(minP, maxP);
+
+	// reset the number of nodes if different
+	// childCount - 1 to exclude the mesh shape node
+	int numNodes = gNodePlacer.nodes.size();
+	int numChildren = fnBBox.childCount() - 1;
+	bool resetNodes = numChildren != numNodes;
+	if (resetNodes) {
+		MString nodeCount, childCount;
+		nodeCount += numNodes;
+		childCount += numChildren;
+		MGlobal::displayInfo("Fracture: "+nodeCount+" nodes generated but "+ fnSelected.name()+" has "+childCount+" children. Repopulating nodes...");
 			
-			nodePlacer.nodes.clear();
-			nodePlacer.setNodeNumber(numChildren);
-		}
+		gNodePlacer.nodes.clear();
+		gNodePlacer.setNodeNumber(numChildren);
+	}
 		
-		for (int i = 0; i < numChildren; i++) {
-			// retrieve child's global position and update nodePlacer
-			MObject child = fnSelected.child(i+1);
-			MFnTransform childTransform(child);
-			MVector translation = childTransform.getTranslation(MSpace::kObject);
-			//MString minCornerX, minCornerY, minCornerZ;
-			//minCornerX += (double)translation.x;
-			//minCornerY += (double)translation.y;
-			//minCornerZ += (double)translation.z;
-			//MGlobal::displayInfo("Fracture: child " + childTransform.name() + " ("+minCornerX+", "+minCornerY+", "+minCornerZ+")");
-
-			if (resetNodes) {
-				nodePlacer.nodes.push_back(Eigen::Vector3d(translation.x, translation.y, translation.z));
-			}
-			else {
-				nodePlacer.nodes[i] = Eigen::Vector3d(translation.x, translation.y, translation.z);
-			}
+	for (int i = 0; i < numChildren; i++) {
+		// retrieve child's global position and update nodePlacer
+		MObject child = fnBBox.child(i+1);
+		MFnTransform childTransform(child);
+		MVector translation = childTransform.getTranslation(MSpace::kObject);
+#if DEBUG
+		MString minCornerX, minCornerY, minCornerZ;
+		minCornerX += (double)translation.x;
+		minCornerY += (double)translation.y;
+		minCornerZ += (double)translation.z;
+		MGlobal::displayInfo("Fracture: child " + childTransform.name() + " ("+minCornerX+", "+minCornerY+", "+minCornerZ+")");
+#endif
+		if (resetNodes) {
+			gNodePlacer.nodes.push_back(Eigen::Vector3d(translation.x, translation.y, translation.z));
 		}
-		nodePlacer.recalculateAABB();
+		else {
+			gNodePlacer.nodes[i] = Eigen::Vector3d(translation.x, translation.y, translation.z);
+		}
 	}
 
 	// 4. -->CompoundNode.h: run fracture pipeline on decomposed mesh
-	*/
+
     return status;
 }
 

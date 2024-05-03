@@ -6,8 +6,6 @@
 
 #define SPHERE_MULTIPLIER 0.02
 
-NodePlacer nodePlacer;
-
 NodeCmd::NodeCmd() : MPxCommand()
 {
 }
@@ -87,6 +85,7 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 	double sphereSize = std::min(half_width, std::min(half_height, half_depth)) * SPHERE_MULTIPLIER * 2;
 
 	// Run the NodePlacer
+	NodePlacer nodePlacer;
 	nodePlacer.setNodeNumber(number); 
 	nodePlacer.setAABB(minP, maxP);
 	nodePlacer.generateNodes(method); 
@@ -120,34 +119,6 @@ MStatus NodeCmd::doIt( const MArgList& argList )
 		status = MGlobal::executeCommand(p3); 
 	}
 	status = MGlobal::executeCommand("scale -r $oldX $oldY $oldZ $object;");
-
-#if DEBUG
-	if (nodePlacer.nodes.size() > 0) {
-		MString numNodes;
-		numNodes += (int)nodePlacer.nodes.size();
-		MGlobal::displayInfo("Voro nodes # = " + numNodes);
-
-		for (const auto& node : nodePlacer.nodes) {
-			MString minCornerX, minCornerY, minCornerZ;
-			minCornerX += (double)node.x();
-			minCornerY += (double)node.y();
-			minCornerZ += (double)node.z();
-			MGlobal::displayInfo("node = (" + minCornerX + ", " + minCornerY + ", " + minCornerZ + ")");
-		}
-
-		MString minCornerX, minCornerY, minCornerZ;
-		minCornerX += (double)nodePlacer.minPoint.x();
-		minCornerY += (double)nodePlacer.minPoint.y();
-		minCornerZ += (double)nodePlacer.minPoint.z();
-		MGlobal::displayInfo("Voro minCorner = " + minCornerX + ", " + minCornerY + ", " + minCornerZ);
-
-		MString maxCornerX, maxCornerY, maxCornerZ;
-		maxCornerX += (double)nodePlacer.maxPoint.x();
-		maxCornerY += (double)nodePlacer.maxPoint.y();
-		maxCornerZ += (double)nodePlacer.maxPoint.z();
-		MGlobal::displayInfo("Voro maxCorner = " + maxCornerX + ", " + maxCornerY + ", " + maxCornerZ);
-	}
-#endif
 
     return MStatus::kSuccess;
 }

@@ -1,15 +1,15 @@
 #define MNoPluginEntry
 #define MNoVersionString
 #include <maya/MFnPlugin.h>
-#include <maya/MFnMesh.h>
-#include <maya/MPointArray.h>
-#include <maya/MVectorArray.h>
 #undef MNoPluginEntry
 #undef MNoVersionString
 
+#include <maya/MFnMesh.h>
+#include <maya/MPointArray.h>
+#include <maya/MVectorArray.h>
+#include <maya/MGlobal.h>
+
 #include "CompoundNode.h"
-#include "ConvexMesh.h"
-#include "CompoundMesh.h"
 #include <random>
 
 MTypeId CompoundNode::id(0x00000231);
@@ -94,12 +94,12 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 
 	// Get input values
 #if DEBUG
-	if (nodePlacer.nodes.size() > 0) {
+	if (gNodePlacer.nodes.size() > 0) {
 		MString numNodes;
-		numNodes += (int)nodePlacer.nodes.size();
+		numNodes += (int)gNodePlacer.nodes.size();
 		MGlobal::displayInfo("Voro nodes # = " + numNodes);
 
-		for (const auto& node : nodePlacer.nodes) {
+		for (const auto& node : gNodePlacer.nodes) {
 			MString minCornerX, minCornerY, minCornerZ;
 			minCornerX += (double)node.x();
 			minCornerY += (double)node.y();
@@ -108,15 +108,15 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 		}
 
 		MString minCornerX, minCornerY, minCornerZ;
-		minCornerX += (double)nodePlacer.minPoint.x();
-		minCornerY += (double)nodePlacer.minPoint.y();
-		minCornerZ += (double)nodePlacer.minPoint.z();
+		minCornerX += (double)gNodePlacer.minPoint.x();
+		minCornerY += (double)gNodePlacer.minPoint.y();
+		minCornerZ += (double)gNodePlacer.minPoint.z();
 		MGlobal::displayInfo("Voro minCorner = " + minCornerX + ", " + minCornerY + ", " + minCornerZ);
 
 		MString maxCornerX, maxCornerY, maxCornerZ;
-		maxCornerX += (double)nodePlacer.maxPoint.x();
-		maxCornerY += (double)nodePlacer.maxPoint.y();
-		maxCornerZ += (double)nodePlacer.maxPoint.z();
+		maxCornerX += (double)gNodePlacer.maxPoint.x();
+		maxCornerY += (double)gNodePlacer.maxPoint.y();
+		maxCornerZ += (double)gNodePlacer.maxPoint.z();
 		MGlobal::displayInfo("Voro maxCorner = " + maxCornerX + ", " + maxCornerY + ", " + maxCornerZ);
 	}
 #endif
@@ -125,9 +125,17 @@ MStatus CompoundNode::compute(const MPlug& plug, MDataBlock& dataBlock)
 	PatternType patternType = static_cast<PatternType>(dataBlock.inputValue(aPatternType, &status).asInt());
 
 	preppedMeshPath = pluginPath + PREPPED_MESH_FILE.c_str();
+	MGlobal::displayInfo("Simulation on "+ preppedMeshPath);
+
 	std::string preppedMeshPathStr = std::string(preppedMeshPath.asChar());
 	Simulation fractureSim(preppedMeshPathStr);
-	fractureSim.genFractureUniformDynamic(nodePlacer.nodes, nodePlacer.minPoint, nodePlacer.maxPoint);
+	if (gNodePlacer.nodes.size() > 0) {
+		fractureSim.genFractureUniformDynamic(gNodePlacer.nodes, gNodePlacer.minPoint, gNodePlacer.maxPoint);
+		MGlobal::displayInfo("Dynamic uniform fracutring...");
+	}
+	else {
+		fractureSim.genFractureUniformStatic();
+	}
 
 	auto shards = fractureSim.getFractureShards();
 	if (shards.size() > 0) {

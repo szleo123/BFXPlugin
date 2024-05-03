@@ -3,6 +3,8 @@
 
 #include <maya/MGlobal.h>
 
+NodePlacer gNodePlacer;
+
 NodePlacer::NodePlacer(): numOfNodes(8), minPoint(Eigen::Vector3d()), maxPoint(Eigen::Vector3d())
 {
 }
@@ -18,6 +20,7 @@ void NodePlacer::setAABB(Eigen::Vector3d minp, Eigen::Vector3d maxp)
 	maxPoint = maxp; 
 }
 
+// BUGGY!!!
 void NodePlacer::recalculateAABB()
 {
 	// Avoid copying the data to a Eigen::MatrixXd but instead directly work with the Eigen::Map
