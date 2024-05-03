@@ -173,7 +173,7 @@ MObject CompoundNode::createMesh(
 
 	for (const auto& compound : shards)
 	{
-		CompoundMesh comp(compound);
+		CompoundMesh comp(compound, gNodePlacer.explodeAmount);
 		comp.appendToMesh(points, faceCounts, faceConnects);
 	}
 

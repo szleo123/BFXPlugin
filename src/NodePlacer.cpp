@@ -5,7 +5,7 @@
 
 NodePlacer gNodePlacer;
 
-NodePlacer::NodePlacer(): numOfNodes(8), minPoint(Eigen::Vector3d()), maxPoint(Eigen::Vector3d())
+NodePlacer::NodePlacer(): numOfNodes(8), minPoint(Eigen::Vector3d()), maxPoint(Eigen::Vector3d()), explodeAmount(0.1)
 {
 }
 
@@ -18,6 +18,11 @@ void NodePlacer::setAABB(Eigen::Vector3d minp, Eigen::Vector3d maxp)
 {
 	minPoint = minp; 
 	maxPoint = maxp; 
+}
+
+void NodePlacer::setExplodeAmt(double num)
+{
+	explodeAmount = num;
 }
 
 // BUGGY!!!
@@ -48,4 +53,14 @@ void NodePlacer::generateNodes(std::string method)
 		}
 	}
 	return;
+}
+
+void NodePlacer::addNode(Eigen::Vector3d node)
+{
+	nodes.push_back(node);
+}
+
+void NodePlacer::clearNodes()
+{
+	nodes.clear();
 }

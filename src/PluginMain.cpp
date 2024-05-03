@@ -16,7 +16,7 @@
 #include <maya/MStringArray.h>
 #include <list>
 
-#include "NodeCmd.h"
+#include "PreprocessCmd.h"
 #include "FractureCmd.h"
 #include "CompoundNode.h"
 
@@ -28,9 +28,9 @@ MStatus initializePlugin( MObject obj )
     plugin.setName("BFXPlugin");
 
     // Register Commands
-    status = plugin.registerCommand( "NodeCmd", NodeCmd::creator );
+    status = plugin.registerCommand( "PreprocessCmd", PreprocessCmd::creator );
     if (!status) {
-        status.perror("registerCommand: NodeCmd");
+        status.perror("registerCommand: PreprocessCmd");
         return status;
     }
 
@@ -61,9 +61,9 @@ MStatus uninitializePlugin( MObject obj)
     MFnPlugin plugin( obj );
 
     // De-register Command
-    status = plugin.deregisterCommand( "NodeCmd" );
+    status = plugin.deregisterCommand( "PreprocessCmd" );
     if (!status) {
-	    status.perror("deregisterCommand: NodeCmd");
+	    status.perror("deregisterCommand: PreprocessCmd");
 	    return status;
     }
 

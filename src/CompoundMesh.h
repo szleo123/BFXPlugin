@@ -12,7 +12,7 @@
 class CompoundMesh
 {
 public:
-	CompoundMesh(const Compound& compound);
+	CompoundMesh(const Compound& compound, double explodeAmt);
 	~CompoundMesh();
 
 	void getMesh(
@@ -31,7 +31,8 @@ protected:
 	std::vector<Eigen::Vector3d> mTotalVertices;
 	std::vector<std::vector<int>> mTotalFaceIndices;
 	MPoint mPosition; // compound controid
-	
+	double explodeAmt;
+
 	void transform(MPointArray& points, MVectorArray& normals);
 	void initCompoundMesh(const Compound& compound);
 

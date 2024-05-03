@@ -44,9 +44,8 @@ global proc displayConfig()
 {
 	global string $numIter;
 	global string $patternType = "patternType";
-	global string $fractureDensity;
+	//global string $fractureDensity;
 	global string $explodeAmt;
-    global int $isTriangulated = 0; // to track if a selected object is triangulated already
     
 	if(`window -ex BFXWindow`)
 	{
@@ -117,7 +116,7 @@ global proc displayConfig()
 		setParent ..;
 
 		$explodeAmt = `floatSliderGrp -l "Explode Amount" -f true -fmn 0 -fmx 5 -min 0 -max 1 -v 0.5`;
-		$fractureDensity = `floatSliderGrp -l "Fracture Density" -f true -fmn 0 -fmx 5 -min 0 -max 5 -v 1`;
+		//$fractureDensity = `floatSliderGrp -l "Fracture Density" -f true -fmn 0 -fmx 5 -min 0 -max 5 -v 1`;
 	setParent ..;
 
 	// Partial Fracturing
@@ -132,7 +131,7 @@ global proc displayConfig()
 
 	// dialog buttons
 	string $formParams = `formLayout`;
-	string $createBtn = `button -l "Create" -w 50 -c callFractureCmd`;
+	string $createBtn = `button -l "Create" -w 50 -c "float $explode = `floatSliderGrp -q -v $explodeAmt`; callFractureCmd($explode)"`;
 	string $cancelBtn = `button -l "Cancel" -w 50 -c quitConfig`;
 
 	formLayout -e
@@ -145,44 +144,26 @@ global proc displayConfig()
 
 global proc runCoACD()
 {
-	// currently assuming all the assets and coacd.exe are in the same dir as .mll
-	string $pluginName = "BFXPlugin";
-	string $fullpath = `pluginInfo -q -path -name $pluginName`;
-	string $wk = substituteAllString($fullpath, $pluginName + ".mll", "");
-
-	string $coacdPath = $wk + "coacd.exe";
-	string $inputPath = $wk + "input.obj";
-	string $outputPath = $wk + "output.obj";
-	string $remeshPath = $wk + "remesh.obj";
-	print($coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\n");
-
-	system("\"" + $coacdPath + " -i " + $inputPath + " -o " + $outputPath + " -ro " + $remeshPath + "\"");
+	// Triangulate selected mesh first
+	string $selected[] = `ls -sl`;
+	select -r $selected[0];
+	polyTriangulate -ch on $selected[0];
+	select -r $selected[0];
+	
+	PreprocessCmd;
 }
 
 // call FractureCmd with args from config window
-global proc callFractureCmd()
+global proc callFractureCmd(float $explode)
 {
 	global string $patternType;
-	global int $isTriangulated;
-	global string $lastFractured;
 
 	string $currPatternType = `optionMenu -q -v $patternType`;
 	print ("pattern: " + $currPatternType + "\n");
-
-    // triangulate the selected mesh first
-    string $selected[] = `ls -sl`;
-	//if(size($selected) == 1 && $lastFractured != $selected[0] && $isTriangulated == 0)
-	//{
-	    select -r $selected[0];
-    	polyTriangulate -ch on $selected[0];
-    	select -r $selected[0];
-
-		$isTriangulated = 1;
-		$lastFractured = $selected[0];
-	//}
-	print ("last fractured selection: "+ $lastFractured + "\n");
-
-	FractureCmd -p $patternType;
+	
+	print("explode amount: "+$explode+ "\n");
+	
+	FractureCmd -p $patternType -e $explode;
 }
 
 // Close command window

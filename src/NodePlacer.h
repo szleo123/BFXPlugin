@@ -14,14 +14,17 @@ public:
 	~NodePlacer() {}; 
 	// Set/get inputs
 	void setNodeNumber(int num);
-	void setAABB(Eigen::Vector3d minp, Eigen::Vector3d maxp); 
+	void setAABB(Eigen::Vector3d minp, Eigen::Vector3d maxp);
+	void setExplodeAmt(double amt);
 	void recalculateAABB();
 
 	std::vector<Eigen::Vector3d> getNodes();
 	
 	// generate initial random nodes
 	void generateNodes(std::string method);
-	
+	void addNode(Eigen::Vector3d node);
+
+	void clearNodes();
 	
 private:
 	std::vector<Eigen::Vector3d> nodes; 
@@ -29,8 +32,10 @@ private:
 	Eigen::Vector3d minPoint; // corners of the selected mesh's bounding box
 	Eigen::Vector3d maxPoint;
 
+	// TODO: move to fracture config class
+	double explodeAmount;
+
 	friend class CompoundNode;
-	friend class FractureCmd;
 };
 
 extern NodePlacer gNodePlacer; // TODO: make a static shared data class to communicate between commands

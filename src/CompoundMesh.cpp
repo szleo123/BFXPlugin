@@ -7,7 +7,7 @@ MVectorArray CompoundMesh::gNormals;
 MIntArray CompoundMesh::gFaceCounts;
 MIntArray CompoundMesh::gFaceConnects;
 
-CompoundMesh::CompoundMesh(const Compound& compound)
+CompoundMesh::CompoundMesh(const Compound& compound, double explode) : explodeAmt(explode)
 {
 	initCompoundMesh(compound);
 
@@ -22,10 +22,9 @@ void CompoundMesh::transform(MPointArray& points, MVectorArray& normals)
     for (int i = 0; i < gPoints.length(); i++)
     {
         MPoint p = gPoints[i];
-        float d = 0.1f; // TODO: translation by a hard-coded distance d
         MVector direction(mPosition);
         direction.normalize(); 
-        p = p + MPoint(direction) * d; 
+        p = p + MPoint(direction) * explodeAmt;
         points.append(p);
 
         // TODO: transform normals if needed
