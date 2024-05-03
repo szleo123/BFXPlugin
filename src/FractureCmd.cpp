@@ -128,7 +128,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	MDagPath selectedPathParenting; // the old selectedPath is modified and specifically for mesh shape use
 	status = selection.getDagPath(0, selectedPathParenting);
 	MFnDagNode fnSelected(selectedPathParenting);
-	
+
 	if (fnSelected.childCount() < 2) {
 		MGlobal::displayInfo("Fracture: "+ fnSelected.name() + " has no nodes. Using the default 10-Cell Voronoi pattern...");
 		return status;
@@ -138,8 +138,14 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	MDagPath selectedPathBBox;
 	MBoundingBox boundingBox;
 
-	MObject bbox = fnSelected.child(1);
-	status = MDagPath::getAPathTo(bbox, selectedPathBBox);
+	// iterate over children of the selection to find _bbox
+	for (int i = 0; i < fnSelected.childCount(); i++) {
+		MObject child = fnSelected.child(i);
+		status = MDagPath::getAPathTo(child, selectedPathBBox);
+		
+		if (selectedPathBBox.partialPathName() == fnSelected.partialPathName() + "_bbox") break;
+	}
+
 	MFnDagNode fnBBox(selectedPathBBox);
 	boundingBox = fnBBox.boundingBox(&status);
 	if (status != MS::kSuccess) {
@@ -151,20 +157,28 @@ MStatus FractureCmd::doIt( const MArgList& args )
 	Eigen::Vector3d maxP(boundingBox.max()[0], boundingBox.max()[1], boundingBox.max()[2]);
 	gNodePlacer.setAABB(minP, maxP);
 
+#if DEBUG
+	MString minCornerX, minCornerY, minCornerZ;
+	minCornerX += (double)minP.x();
+	minCornerY += (double)minP.y();
+	minCornerZ += (double)minP.z();
+	MGlobal::displayInfo("minP: " + fnBBox.fullPathName() + " (" + minCornerX + ", " + minCornerY + ", " + minCornerZ + ")");
+	MString maxCornerX, maxCornerY, maxCornerZ;
+	maxCornerX += (double)maxP.x();
+	maxCornerY += (double)maxP.y();
+	maxCornerZ += (double)maxP.z();
+	MGlobal::displayInfo("maxP: " + fnBBox.fullPathName() + " (" + maxCornerX + ", " + maxCornerY + ", " + maxCornerZ + ")");
+#endif
+
 	// reset the number of nodes if different
 	// childCount - 1 to exclude the mesh shape node
-	int numNodes = gNodePlacer.nodes.size();
 	int numChildren = fnBBox.childCount() - 1;
-	bool resetNodes = numChildren != numNodes;
-	if (resetNodes) {
-		MString nodeCount, childCount;
-		nodeCount += numNodes;
-		childCount += numChildren;
-		MGlobal::displayInfo("Fracture: "+nodeCount+" nodes generated but "+ fnSelected.name()+" has "+childCount+" children. Repopulating nodes...");
+	MString childCount;
+	childCount += numChildren;
+	MGlobal::displayInfo("Fracture: " + fnBBox.name()+" has "+childCount+" children. Repopulating nodes...");
 			
-		gNodePlacer.nodes.clear();
-		gNodePlacer.setNodeNumber(numChildren);
-	}
+	gNodePlacer.nodes.clear();
+	gNodePlacer.setNodeNumber(numChildren);
 		
 	for (int i = 0; i < numChildren; i++) {
 		// retrieve child's global position and update nodePlacer
@@ -178,12 +192,7 @@ MStatus FractureCmd::doIt( const MArgList& args )
 		minCornerZ += (double)translation.z;
 		MGlobal::displayInfo("Fracture: child " + childTransform.name() + " ("+minCornerX+", "+minCornerY+", "+minCornerZ+")");
 #endif
-		if (resetNodes) {
-			gNodePlacer.nodes.push_back(Eigen::Vector3d(translation.x, translation.y, translation.z));
-		}
-		else {
-			gNodePlacer.nodes[i] = Eigen::Vector3d(translation.x, translation.y, translation.z);
-		}
+		gNodePlacer.nodes.push_back(Eigen::Vector3d(translation.x, translation.y, translation.z));
 	}
 
 	// 4. -->CompoundNode.h: run fracture pipeline on decomposed mesh

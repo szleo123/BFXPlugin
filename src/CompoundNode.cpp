@@ -171,7 +171,6 @@ MObject CompoundNode::createMesh(
 	MVectorArray normals;
 	MIntArray faceCounts, faceConnects;
 
-	int radius = 0;
 	for (const auto& compound : shards)
 	{
 		CompoundMesh comp(compound);

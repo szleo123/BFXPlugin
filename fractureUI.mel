@@ -171,15 +171,15 @@ global proc callFractureCmd()
 
     // triangulate the selected mesh first
     string $selected[] = `ls -sl`;
-	if(size($selected) == 1 && $lastFractured != $selected[0] && $isTriangulated == 0)
-	{
+	//if(size($selected) == 1 && $lastFractured != $selected[0] && $isTriangulated == 0)
+	//{
 	    select -r $selected[0];
-    	    polyTriangulate -ch on $selected[0];
-    	    select -r $selected[0];
+    	polyTriangulate -ch on $selected[0];
+    	select -r $selected[0];
 
 		$isTriangulated = 1;
 		$lastFractured = $selected[0];
-	}
+	//}
 	print ("last fractured selection: "+ $lastFractured + "\n");
 
 	FractureCmd -p $patternType;
